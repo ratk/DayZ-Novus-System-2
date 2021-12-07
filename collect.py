@@ -1,6 +1,7 @@
 import requests
 import urllib
 import json
+import os
 
 AUTH_KEY = os.environ.get("auth_key")
 SERVER_ID = os.environ.get("server_id")
