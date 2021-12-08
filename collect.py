@@ -13,8 +13,8 @@ if debug:
   AUTH_KEY = os.getenv('AUTH_KEY')
   SERVER_ID = os.getenv('SERVER_ID')
 else:
-  AUTH_KEY = os.environ('auth_key')
-  SERVER_ID = os.environ('server_id')
+  AUTH_KEY = os.environ['auth_key']
+  SERVER_ID = os.environ['server_id']
 
 logFlags = [
   "disconnected",
