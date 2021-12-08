@@ -8,6 +8,9 @@ load_dotenv()
 AUTH_KEY = os.getenv('AUTH_KEY')
 SERVER_ID = os.getenv('SERVER_ID')
 
+print(AUTH_KEY)
+print(SERVER_ID)
+
 logFlags = [
   "disconnected",
   ") placed ",
