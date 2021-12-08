@@ -118,18 +118,18 @@ function currentPos(message, args) {
 				if (players.players[i].posHistory.length>0) {
 					let lastPos = players.players[i].posHistory[players.players[i].posHistory.length-1].pos
 					let diff = [Math.round(lastPos[0] - pos[0]), Math.round(lastPos[1] - pos[1])];
-					let distance = Math.sqrt(Math.pow(diff[0], 2) + Math.pow(diff[1], 2)).toFixed(2)
-					let theta = Math.abs(Math.atan(diff[1]/diff[0])*180/Math.PI).toFixed(1);
+					let distance = Math.sqrt(Math.pow(diff[0], 2) + Math.pow(diff[1], 2)).toFixed(0)
+					let theta = Math.abs(Math.atan(diff[1]/diff[0])*180/Math.PI).toFixed(0);
 					let dir;
 
 					if (pos[0]>lastPos[0]&&pos[1]>lastPos[1]) dir = "North East";
-					if (pos[0]<lastPos[0]&&pos[1]>lastPos[1]) dir = "South East";
-					if (pos[0]>lastPos[0]&&pos[1]==lastPos[1]) dir = "North";
-					if (pos[0]<lastPos[0]&&pos[1]==lastPos[1]) dir = "South";
-					if (pos[0]>lastPos[0]&&pos[1]<lastPos[1]) dir = "North West";
+					if (pos[0]>lastPos[0]&&pos[1]<lastPos[1]) dir = "South East";
+					if (pos[0]==lastPos[0]&&pos[1]>lastPos[1]) dir = "North";
+					if (pos[0]==lastPos[0]&&pos[1]<lastPos[1]) dir = "South";
+					if (pos[0]<lastPos[0]&&pos[1]>lastPos[1]) dir = "North West";
 					if (pos[0]<lastPos[0]&&pos[1]<lastPos[1]) dir = "South West";
-					if (pos[0]==lastPos[0]&&pos[1]>lastPos[1]) dir = "East";
-					if (pos[0]==lastPos[0]&&pos[1]<lastPos[1]) dir = "West";
+					if (pos[0]>lastPos[0]&&pos[1]==lastPos[1]) dir = "East";
+					if (pos[0]<lastPos[0]&&pos[1]==lastPos[1]) dir = "West";
 					
 					console.log(`**__${gamertag}'s current positional data:__**`)
 					console.log(`**${gamertag}** has moved **__${distance}m @${theta}° ${dir}__**`)
