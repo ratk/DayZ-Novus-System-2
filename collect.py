@@ -2,9 +2,11 @@ import requests
 import urllib
 import json
 import os
+from dotenv import load_dotenv
 
-AUTH_KEY = os.environ.get("auth_key")
-SERVER_ID = os.environ.get("server_id")
+load_dotenv()
+AUTH_KEY = os.getenv('AUTH_KEY')
+SERVER_ID = os.getenv('SERVER_ID')
 
 logFlags = [
   "disconnected",

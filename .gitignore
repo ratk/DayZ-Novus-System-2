@@ -6,3 +6,8 @@ test.js
 
 # Environment
 .env
+
+# Outputs
+players.json
+logs.ADM
+clean.txt
