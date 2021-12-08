@@ -4,12 +4,17 @@ import json
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
-AUTH_KEY = os.getenv('AUTH_KEY')
-SERVER_ID = os.getenv('SERVER_ID')
+# Check if on heroku
+debug = False
+if 'DYNO' not in os.environ: debug = True
 
-print(AUTH_KEY)
-print(SERVER_ID)
+if debug:
+  load_dotenv()
+  AUTH_KEY = os.getenv('AUTH_KEY')
+  SERVER_ID = os.getenv('SERVER_ID')
+else:
+  AUTH_KEY = os.environ('auth_key')
+  SERVER_ID = os.environ('server_id')
 
 logFlags = [
   "disconnected",
