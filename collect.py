@@ -115,11 +115,36 @@ def collectPlayerData():
         # Logs new player data
         players['players'].append(query)
 
-  with open("players.json", "w") as playerJSON:
-    json.dump(players, playerJSON, ensure_ascii=False, indent=2)
 
+# Search Logs for Connected and Disconnected messages
+def activeStatus():
+  with open("logs.ADM", "r") as logs:
+    lines = logs.readlines()
+    for line in lines:
+      if "connected" in line.strip("\n") and "| Player" in line.strip("\n"):
+        # Get player ID
+        beginID = line.strip("\n").find('(id=')+4
+        endID = line.strip("\n").find(")")
+        playerID = line.strip("\n")[beginID:endID]
+
+        for i in range(len(players['players'])):
+          if players['players'][i]['playerID']==playerID:
+            players['players'][i]['connectionStatus'] = "Online"
+
+      elif "disconnected" in line.strip("\n") and "| Player" in line.strip("\n"):
+        # Get player ID
+        beginID = line.strip("\n").find('(id=')+4
+        endID = line.strip("\n").find(")")
+        playerID = line.strip("\n")[beginID:endID]
+
+        for i in range(len(players['players'])):
+          if players['players'][i]['playerID']==playerID:
+            players['players'][i]['connectionStatus'] = "Offline"
 
 if __name__ == '__main__':
   getRawLogs()
   cleanLogs()
   collectPlayerData()
+  activeStatus()
+  with open("players.json", "w") as playerJSON:
+    json.dump(players, playerJSON, ensure_ascii=False, indent=2)
