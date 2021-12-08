@@ -1,4 +1,4 @@
-const {exec} = require('child_process');
+const { exec } = require('child_process');
 const Discord = require('discord.js');
 const client = new Discord.Client({disableEveryone: false, intents: [Discord.Intents.FLAGS.GUILDS, Discord.Intents.FLAGS.GUILD_MESSAGES]});
 const dotenv = require('dotenv');
@@ -264,6 +264,17 @@ function onlineStatus(message, args) {
 	});
 }
 
+function restartServer(message) {
+	console.log("\n------------- Begin Restart Server -------------")
+	exec("python restart.py", (error, stdout, stderr) => {
+		if (error!=null&&error!=undefined&&error!="") {console.log("ERROR: ",error,"\n\n------------- End Restart Server -------------");return message.channel.send(error);}
+    if (stderr!=null&&stderr!=undefined&&stderr!="") {console.log("STD ERROR: ",stderr,"\n\n------------- End Restart Server -------------");return message.channel.send(stderr);}
+    console.log("Successfully executed restart.py");
+    console.log("Restarting Server...\n\n------------- End Restart Server -------------")
+    return message.channel.send("Restarting Server...");
+	});
+}
+
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}`);
 });
@@ -293,6 +304,7 @@ client.on('message', async (message) => {
       **${prefix}forceCheck** - \`Forces a check for player in base\`
       **${prefix}currentPos** <gamertag> - \`Forces a check for player in base\`
       **${prefix}onlineStatus** <gamertag> - \`Check if player is online\`
+			**${prefix}restartServer** - \`Restarts Server\`      
       `,
       inline: false
     })
@@ -307,5 +319,6 @@ client.on('message', async (message) => {
   if (command == 'currentpos') {currentPos(message, args);}
   if (command == 'updatelogs') {updateLogs(message);}
   if (command == 'onlinestatus') {onlineStatus(message, args);}
+  if (command == 'restartServer') {restartServer(message);}
 });
 client.login(process.env.token);
