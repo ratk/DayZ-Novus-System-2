@@ -1,3 +1,8 @@
+# Outputs
+players.json
+logs.ADM
+clean.txt
+
 # Dependencies
 node_modules/*
 
@@ -6,8 +11,3 @@ test.js
 
 # Environment
 .env
-
-# Outputs
-players.json
-logs.ADM
-clean.txt
