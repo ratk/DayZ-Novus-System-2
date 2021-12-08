@@ -304,7 +304,7 @@ client.on('message', async (message) => {
       **${prefix}forceCheck** - \`Forces a check for player in base\`
       **${prefix}currentPos** <gamertag> - \`Forces a check for player in base\`
       **${prefix}onlineStatus** <gamertag> - \`Check if player is online\`
-			**${prefix}restartserver** - \`Restarts Server\`      
+			**${prefix}restartServer** - \`Restarts Server\`      
       `,
       inline: false
     })
@@ -319,6 +319,6 @@ client.on('message', async (message) => {
   if (command == 'currentpos') {currentPos(message, args);}
   if (command == 'updatelogs') {updateLogs(message);}
   if (command == 'onlinestatus') {onlineStatus(message, args);}
-  if (command == 'restartServer') {restartServer(message);}
+  if (command == 'restartserver') {restartServer(message);}
 });
 client.login(process.env.token);
