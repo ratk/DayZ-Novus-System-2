@@ -304,7 +304,7 @@ client.on('message', async (message) => {
       **${prefix}forceCheck** - \`Forces a check for player in base\`
       **${prefix}currentPos** <gamertag> - \`Forces a check for player in base\`
       **${prefix}onlineStatus** <gamertag> - \`Check if player is online\`
-			**${prefix}restartServer** - \`Restarts Server\`      
+			**${prefix}restartserver** - \`Restarts Server\`      
       `,
       inline: false
     })
