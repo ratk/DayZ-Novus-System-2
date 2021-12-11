@@ -137,8 +137,8 @@ function currentPos(message, args) {
 					
 					console.log(`**__${gamertag}'s current positional data:__**`)
 					console.log(`**${gamertag}** has moved **__${distance}m @${theta}° ${dir}__**`)
-					console.log(`**From Last Position:** ${lastPos[0]} / ${lastPos[1]}  at  **Last Time:** ${players.players[i].posHistory[players.players[i].posHistory.length-1].time}`)
-					console.log(`**To Latest Position:** ${pos[0]} / ${pos[1]}  at  **Latest Time:** ${players.players[i].time}\n\n------------- End Current Player Pos -------------`)
+					console.log(`**From Last Position:** \`${lastPos[0]} / ${lastPos[1]}\`  at  **Last Time:** \`\`${players.players[i].posHistory[players.players[i].posHistory.length-1].time}\``)
+					console.log(`**To Latest Position:** \`${pos[0]} / ${pos[1]}\`  at  **Latest Time:** \`${players.players[i].time}\`\n\n------------- End Current Player Pos -------------`)
 
 					message.channel.send(`**__${gamertag}'s current positional data:__**`)
 					message.channel.send(`**${gamertag}** has moved **__${distance}m @${theta}° ${dir}__**`);
@@ -146,7 +146,7 @@ function currentPos(message, args) {
 					return message.channel.send(`**To Latest Position:** \`${pos[0]} / ${pos[1]}\`  at  **Latest Time:** \`${players.players[i].time}\``);
 				}
 				console.log(`**__${gamertag}'s current positional data:__**`)
-				console.log(`**Latest Position:** ${pos[0]} / ${pos[1]}  at  **Latest Time:** ${players.players[i].time}\n\n------------- End Current Player Pos -------------`)
+				console.log(`**Latest Position:** \`${pos[0]} / ${pos[1]}\`  at  **Latest Time:** \`${players.players[i].time}\`\n\n------------- End Current Player Pos -------------`)
 				message.channel.send(`**__${gamertag}'s current positional data:__**`)
 				return message.channel.send(`**Latest Position:** \`${pos[0]} / ${pos[1]}\`  at  **Latest Time:** \`${players.players[i].time}\``);	
 			}
@@ -182,7 +182,7 @@ function checkPosHistory(message, args) {
 				message.channel.send(`Collecting Position History...`);
 				for (let j = 0; j < players.players[i].posHistory.length; j++) {
 					console.log(`**Position:** ${players.players[i].posHistory[j].pos[0]} / ${players.players[i].posHistory[j].pos[1]}  at  **Time:** ${players.players[i].posHistory[j].time}`)
-					playerHistory.push(`**Position:** \`${players.players[i].posHistory[j].pos[0]}\` / ${players.players[i].posHistory[j].pos[1]}\`  at  **Time:** \`${players.players[i].posHistory[j].time}\``);	
+					playerHistory.push(`**Position:** \`${players.players[i].posHistory[j].pos[0]} / ${players.players[i].posHistory[j].pos[1]}\`  at  **Time:** \`${players.players[i].posHistory[j].time}\``);	
 				}
 				message.channel.send(playerHistory);
 				message.channel.send("Calculating...");
@@ -215,9 +215,9 @@ function checkPosHistory(message, args) {
 					return message.channel.send("Done");
 				}
 				console.log(`**__${gamertag}'s current positional data:__**`)
-				console.log(`**Latest Position:** ${pos[0]} / ${pos[1]}  at  **Latest Time:** ${players.players[i].time}\n\n------------- End Player Pos History -------------`)
+				console.log(`**Latest Position:** \`${pos[0]} / ${pos[1]}\`  at  **Latest Time:** \`${players.players[i].time}\`\n\n------------- End Player Pos History -------------`)
 				message.channel.send(`**__${gamertag}'s current positional data:__**`)
-				message.channel.send(`**Latest Position:** ${pos[0]} / ${pos[1]}  at  **Latest Time:** ${players.players[i].time}`);	
+				message.channel.send(`**Latest Position:** \`${pos[0]} / ${pos[1]}\`  at  **Latest Time:** \`${players.players[i].time}\``);	
 				return message.channel.send("Done");
 			}
 		}
