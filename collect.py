@@ -25,7 +25,7 @@ logFlags = [
   "is unconscious",
   "killed by",
   ")Built ",
-	"folded Fence",
+	") folded",
   ")Player SurvivorBase",
   ") died.",
   ") committed suicide",
