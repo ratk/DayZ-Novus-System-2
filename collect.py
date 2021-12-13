@@ -144,7 +144,7 @@ def activeStatus():
         
         if not playerFoundAndUpdated:
           beginPlayer = 19 # Player names always start here
-          endPlayer = line.strip("\n").find('(')-2
+          endPlayer = line.strip("\n").find('is connect')-2
           playerName = line.strip("\n")[beginPlayer:endPlayer]
           query = {
             "gamertag": playerName,
