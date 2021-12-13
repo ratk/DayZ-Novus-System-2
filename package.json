@@ -4,7 +4,8 @@
   "description": "DayZ Admin Software",
   "main": "bot.js",
   "scripts": {
-    "start": "node bot.js"
+    "start": "node bot.js",
+    "dev": "nodemon bot.js"
   },
   "repository": {
     "type": "git",
@@ -25,5 +26,8 @@
     "child_process": "^1.0.2",
     "discord.js": "^12.5.3",
     "dotenv": "^10.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
   }
 }
