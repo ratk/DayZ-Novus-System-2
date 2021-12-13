@@ -117,6 +117,7 @@ function currentPos(message, args) {
 		} else {gamertag=args[0]}
 		for (let i = 0; i < players.players.length; i++) {
 			if (players.players[i].gamertag==gamertag) {
+				if (players.players[i].time==null) console.log(`Player \`${gamertag}\` has no position data.`);return message.channel.send(`Player \`${gamertag}\` has no position data.`);
 				let pos = players.players[i].pos;
 				message.channel.send("Calculating...")
 				if (players.players[i].posHistory.length>0) {
@@ -151,8 +152,8 @@ function currentPos(message, args) {
 				return message.channel.send(`**Latest Position:** \`${pos[0]} / ${pos[1]}\`  at  **Latest Time:** \`${players.players[i].time}\``);	
 			}
 		}
-		console.log(`Player \`${args[0]}\` not found\n\n------------- End Current Player Pos -------------`)
-		return message.channel.send(`Player \`${args[0]}\` not found`);
+		console.log(`Player \`${gamertag}\` not found\n\n------------- End Current Player Pos -------------`)
+		return message.channel.send(`Player \`${gamertag}\` not found`);
 	});
 }
 
@@ -174,6 +175,7 @@ function checkPosHistory(message, args) {
 		} else {gamertag=args[0]}
 		for (let i = 0; i < players.players.length; i++) {
 			if (players.players[i].gamertag==gamertag) {
+				if (players.players[i].time==null) console.log(`Player \`${gamertag}\` has no position data.`);return message.channel.send(`Player \`${gamertag}\` has no position data.`);
 				console.log(`**__${gamertag}'s positional history:__**`);
 				console.log(`**Latest Positions:** \`${players.players[i].pos[0]} / ${players.players[i].pos[1]}\`  at  **Latest Time:** \`${players.players[i].time}\``);
 				let playerHistory = [];
@@ -221,8 +223,8 @@ function checkPosHistory(message, args) {
 				return message.channel.send("Done");
 			}
 		}
-		console.log(`Player \`${args[0]}\` not found\n\n------------- End Player Pos History -------------`)
-		return message.channel.send(`Player \`${args[0]}\` not found`);
+		console.log(`Player \`${gamertag}\` not found\n\n------------- End Player Pos History -------------`)
+		return message.channel.send(`Player \`${gamertag}\` not found`);
 	});
 }
 
@@ -259,8 +261,8 @@ function onlineStatus(message, args) {
 				return message.channel.send(`Player \`${gamertag}\` is \`${players.players[i].connectionStatus}\``);
 			}
 		}
-		console.log(`Player \`${args[0]}\` not found\n\n------------- End Check Player Connection Status -------------`)
-		return message.channel.send(`Player \`${args[0]}\` not found`);
+		console.log(`Player \`${gamertag}\` not found\n\n------------- End Check Player Connection Status -------------`)
+		return message.channel.send(`Player \`${gamertag}\` not found`);
 	});
 }
 
