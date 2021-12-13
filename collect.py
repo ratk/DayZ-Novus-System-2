@@ -121,9 +121,10 @@ def activeStatus():
   with open("logs.ADM", "r") as logs:
     lines = logs.readlines()
     for line in lines:
+      status = ""
       if "connected" in line.strip("\n") and "| Player" in line.strip("\n"): status = "Online"
       elif "disconnected" in line.strip("\n") and "| Player" in line.strip("\n"): status = "Offline"
-        
+
       # Get player ID
       beginID = line.strip("\n").find('(id=')+4
       endID = line.strip("\n").find(")")
