@@ -25,12 +25,7 @@ const whitelist = [
 "MADDHATTER1775"
 ]
 
-let DEBUG;
-if (process.env._ && process.env._.indexOf("heroku")) {
-	DEBUG = false;
-} else {
-	DEBUG = true;
-}
+let DEBUG = process.env.DEBUG
 
 function check(message) {
 	DEBUG && console.log("\n------------- Begin Check -------------")
