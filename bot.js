@@ -25,7 +25,7 @@ const whitelist = [
 "MADDHATTER1775"
 ]
 
-let DEBUG = process.env.DEBUG
+let DEBUG = (process.env.DEBUG=="true");
 console.log("Debug mode: ", DEBUG);
 
 function check(message) {
