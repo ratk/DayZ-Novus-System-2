@@ -26,6 +26,7 @@ const whitelist = [
 ]
 
 let DEBUG = process.env.DEBUG
+console.log("Debug mode: ", DEBUG);
 
 function check(message) {
 	DEBUG && console.log("\n------------- Begin Check -------------")
