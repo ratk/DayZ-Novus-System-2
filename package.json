@@ -1,22 +1,29 @@
 {
-  "name": "novus-alarm",
+  "name": "novus",
   "version": "1.0.0",
-  "description": "",
+  "description": "DayZ Admin Software",
   "main": "bot.js",
   "scripts": {
-    "start": "node bot.js",
-    "dev": "nodemon bot.js"
+    "start": "node bot.js"
   },
-  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SowinskiBraeden/Novus-System.git"
+  },
+  "keywords": [
+    "DayZ",
+    "Discord",
+    "Bot"
+  ],
+  "author": "Braeden Sowinski",
   "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SowinskiBraeden/Novus-System/issues"
+  },
+  "homepage": "https://github.com/SowinskiBraeden/Novus-System#readme",
   "dependencies": {
     "child_process": "^1.0.2",
-    "discord.js": "^12.5.3",
-    "dotenv": "^10.0.0",
-    "https": "^1.0.0",
-    "request": "^2.88.2"
-  },
-  "devDependencies": {
-    "nodemon": "^2.0.15"
+    "discord.js": "^13.3.1",
+    "dotenv": "^10.0.0"
   }
 }
