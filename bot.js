@@ -7,108 +7,103 @@ dotenv.config();
 const minute = 60000; //1 minute in milliseconds
 let i = 0;
 
-const whitelist = [
-"McDazzzled",
-"GETCLSAP",
-"A 356ft Giraffe",
-"Toxic7077",
-"III8 Luigi 8III",
-"lll8 Luigi 8lll",
-"XxGhost314xX",
-"AmusingSquash93",
-"xXAxeManHDXx",
-"XxXSumRandomGuy",
-"Mightymouse2868",
-"ReaperACT",
-"EMS x INDRA",
-"Enragedcross99",
-"MADDHATTER1775"
-]
-
+// const whitelist = require('./whitelist.json').players;
 let DEBUG = (process.env.DEBUG=="true");
 console.log("Debug mode: ", DEBUG);
 
-function check(message) {
-	DEBUG && console.log("\n------------- Begin Check -------------")
-	exec("python collect.py", (error, stdout, stderr) => {
-    if (error!=null&&error!=undefined&&error!="") {DEBUG && console.log("ERROR: ",error,"\n\n------------- End Check -------------");return message.channel.send(error);}
-    if (stderr!=null&&stderr!=undefined&&stderr!="") {DEBUG && console.log("STD ERROR: ",stderr,"\n\n------------- End Check -------------");return message.channel.send(stderr);}
-    DEBUG && console.log("Successfully executed collect.py");
-    // Check Data
-		let players = require('./players.json');
-		for (let i = 0; i < players.players.length; i++) {
-			let px = players.players[i].pos[0];
-			let py = players.players[i].pos[1];
-			// Inside Bounderies
-			if (px>2326.84&&px<2995.71&&py<1625.04&&py>1061.15) {
-				if (!whitelist.includes(players.players[i].gamertag)) {
-					DEBUG && console.log(`Player ${players.players[i].gamertag} found in base.\n\n------------- End Check -------------`);
-					return message.channel.send(`@everyone \`${players.players[i].gamertag}\` is in our base!`);
-				}
-			}
-		}
-		DEBUG && console.log("No players found\n\n------------- End Check -------------")
-	});
-}
+// function check(message) {
+// 	if(DEBUG) console.log("\n------------- Begin Check -------------")
+// 	exec("python collect.py", (error, stdout, stderr) => {
+//     if (error!=null&&error!=undefined&&error!="") {if(DEBUG) console.log("ERROR: ",error,"\n\n------------- End Check -------------");return message.channel.send(error);}
+//     if (stderr!=null&&stderr!=undefined&&stderr!="") {if(DEBUG) console.log("STD ERROR: ",stderr,"\n\n------------- End Check -------------");return message.channel.send(stderr);}
+//     if(DEBUG) console.log("Successfully executed collect.py");
+//     // Check Data
+// 		let players = require('./players.json');
+// 		for (let i = 0; i < players.players.length; i++) {
+// 			let px = players.players[i].pos[0];
+// 			let py = players.players[i].pos[1];
+// 			// Inside Bounderies
+// 			if (px>2326.84&&px<2995.71&&py<1625.04&&py>1061.15) {
+// 				if (!whitelist.includes(players.players[i].gamertag)) {
+// 					if(DEBUG) console.log(`Player ${players.players[i].gamertag} found in base.\n\n------------- End Check -------------`);
+// 					return message.channel.send(`@everyone \`${players.players[i].gamertag}\` is in our base!`);
+// 				}
+// 			}
+// 		}
+// 		if(DEBUG) console.log("No players found\n\n------------- End Check -------------")
+// 	});
+// }
 
-function startSystem(message) {
-	check(message);
-  i += 1;
-  setTimeout(function() {
-    if (i <= 48) {
-      startSystem(message);
-    } else DEBUG && console.log("\nSystem Alarm Disabled");return message.channel.send("System Alarm Disabled");
-  }, minute*5);
-}
+// function startSystem(message) {
+// 	check(message);
+//   i += 1;
+//   setTimeout(function() {
+//     if (i <= 48) {
+//       startSystem(message);
+//     } else if(DEBUG) console.log("\nSystem Alarm Disabled");return message.channel.send("System Alarm Disabled");
+//   }, minute*5);
+// }
 
-function forceCheck(message) {
-	DEBUG && console.log("\n------------- Begin Force Check -------------")
-	exec("python collect.py", (error, stdout, stderr) => {
-    if (error!=null&&error!=undefined&&error!="") {DEBUG && console.log("ERROR: ",error,"\n\n------------- End Force Check -------------");return message.channel.send(error);}
-    if (stderr!=null&&stderr!=undefined&&stderr!="") {DEBUG && console.log("STD ERROR: ",stderr,"\n\n------------- End Force Check -------------");return message.channel.send(stderr);}
-    DEBUG && console.log("Successfully executed collect.py");
-    message.channel.send("Checking...")
-		let players = require('./players.json');
-		for (let i = 0; i < players.players.length; i++) {
-			let px = players.players[i].pos[0]
-			let py = players.players[i].pos[1]
-			// Inside Bounderies
-			if (px>2326.84&&px<2995.71&&py<1625.04&&py>1061.15) {
-				if (!whitelist.includes(players.players[i].gamertag)) {
-					DEBUG && console.log(`Player ${players.players[i].gamertag} found in base.`);
-					return message.channel.send(`@everyone \`${players.players[i].gamertag}\` is in our base!\n\n------------- End Force Check -------------`);
-				}
-			}
-		}
-		DEBUG && console.log("No players found")
-		return message.channel.send('None\n\n------------- End Force Check -------------');
-	});
-}
+// function forceCheck(message) {
+// 	if(DEBUG) console.log("\n------------- Begin Force Check -------------")
+// 	exec("python collect.py", (error, stdout, stderr) => {
+//     if (error!=null&&error!=undefined&&error!="") {if(DEBUG) console.log("ERROR: ",error,"\n\n------------- End Force Check -------------");return message.channel.send(error);}
+//     if (stderr!=null&&stderr!=undefined&&stderr!="") {if(DEBUG) console.log("STD ERROR: ",stderr,"\n\n------------- End Force Check -------------");return message.channel.send(stderr);}
+//     if(DEBUG) console.log("Successfully executed collect.py");
+//     message.channel.send("Checking...")
+// 		let players = require('./players.json');
+// 		for (let i = 0; i < players.players.length; i++) {
+// 			let px = players.players[i].pos[0]
+// 			let py = players.players[i].pos[1]
+// 			// Inside Bounderies
+// 			if (px>2326.84&&px<2995.71&&py<1625.04&&py>1061.15) {
+// 				if (!whitelist.includes(players.players[i].gamertag)) {
+// 					if(DEBUG) console.log(`Player ${players.players[i].gamertag} found in base.`);
+// 					return message.channel.send(`@everyone \`${players.players[i].gamertag}\` is in our base!\n\n------------- End Force Check -------------`);
+// 				}
+// 			}
+// 		}
+// 		if(DEBUG) console.log("No players found")
+// 		return message.channel.send('None\n\n------------- End Force Check -------------');
+// 	});
+// }
 
 function playerList(message) {
-	DEBUG && console.log("\n------------- Begin Collect Player List -------------")
+	if(DEBUG) console.log("\n------------- Begin Collect Player List -------------")
 	exec("python collect.py", (error, stdout, stderr) => {
-    if (error!=null&&error!=undefined&&error!="") {DEBUG && console.log("ERROR: ",error,"\n\n------------- End Collect Player List -------------");return message.channel.send(error);}
-    if (stderr!=null&&stderr!=undefined&&stderr!="") {DEBUG && console.log("STD ERROR: ",stderr,"\n\n------------- End Collect Player List -------------");return message.channel.send(stderr);}
-    DEBUG && console.log("Successfully executed collect.py");
+    if (error!=null&&error!=undefined&&error!="") {if(DEBUG){console.log("ERROR: ",error,"\n\n------------- End Collect Player List -------------");}return message.channel.send(error);}
+    if (stderr!=null&&stderr!=undefined&&stderr!="") {if(DEBUG){console.log("STD ERROR: ",stderr,"\n\n------------- End Collect Player List -------------");}return message.channel.send(stderr);}
+    if(DEBUG) console.log("Successfully executed collect.py");
 		let players = require('./players.json');
-		let playerList = [];
-		if (players.players.length==0) return message.channel.send("No players in logs");
+		let onlinePlayers = ["Online:"];
+		let offlinePlayers = ["Offline:"];
+
+		let online = new Discord.MessageEmbed()
+    	.setColor('#0099ff')
+    	.setTitle('**__Players:__**')
+    	.setAuthor('McDazzzled', 'https://avatars.githubusercontent.com/u/48144618?v=4', 'https://github.com/SowinskiBraeden')
+
+		if (players.players.length==0) {if(DEBUG){console.log("No players in logs")}return message.channel.send("No players in logs");}
 		for (let i = 0; i < players.players.length; i++) {
-			playerList.push(players.players[i].gamertag)
+			if (players.players[i].connectionStatus=="Online") {
+				onlinePlayers.push(players.players[i].gamertag);
+			} else {
+				offlinePlayers.push(players.players[i].gamertag);
+			}
+			online.addFields({ name: `**${players.players[i].gamertag}** is:`, value: `\`${players.players[i].connectionStatus}\``, inline: false });
 		}
-		DEBUG && console.log(playerList,"\n------------- End Collect Player List -------------");
-		return message.channel.send(playerList);
+		if(DEBUG) console.log(onlinePlayers,offlinePlayers,`\n\n------------- End Collect Player List -------------`);
+		return message.channel.send(online);
 	});
 }
 
 function currentPos(message, args) {
-	DEBUG && console.log("\n------------- Begin Current Player Pos -------------")
-	if (args.length==0) return message.channel.send(`You need to provide a gamertag`);
+	if(DEBUG) console.log("\n------------- Begin Current Player Pos -------------")
+	if (args.length==0) {if(DEBUG){console.log("ERROR: No Gamertag provided\n\n------------- End Current Player Pos -------------")}return message.channel.send(`You need to provide a gamertag`);}
 	exec("python collect.py", (error, stdout, stderr) => {
-    if (error!=null&&error!=undefined&&error!="") {DEBUG && console.log("ERROR: ",error,"\n\n------------- End Current Player Pos -------------");return message.channel.send(error);}
-    if (stderr!=null&&stderr!=undefined&&stderr!="") {DEBUG && console.log("STD ERROR: ",stderr,"\n\n------------- End Current Player Pos -------------");return message.channel.send(stderr);}
-    DEBUG && console.log("Successfully executed collect.py");		
+    if (error!=null&&error!=undefined&&error!="") {if(DEBUG)console.log("ERROR: ",error,"\n\n------------- End Current Player Pos -------------");return message.channel.send(error);}
+    if (stderr!=null&&stderr!=undefined&&stderr!="") {if(DEBUG)console.log("STD ERROR: ",stderr,"\n\n------------- End Current Player Pos -------------");return message.channel.send(stderr);}
+    if(DEBUG) console.log("Successfully executed collect.py");		
 		let players = require('./players.json');
 		let gamertag=""
 		if (args.length>1) {
@@ -120,7 +115,7 @@ function currentPos(message, args) {
 		} else {gamertag=args[0]}
 		for (let i = 0; i < players.players.length; i++) {
 			if (players.players[i].gamertag==gamertag) {
-				if (players.players[i].time==null) DEBUG && console.log(`Player \`${gamertag}\` has no position data.`);return message.channel.send(`Player \`${gamertag}\` has no position data.`);
+				if (players.players[i].time==null) {if(DEBUG){console.log(`Player \`${gamertag}\` has no position data.`);}return message.channel.send(`Player \`${gamertag}\` has no position data.`);}
 				let pos = players.players[i].pos;
 				message.channel.send("Calculating...")
 				if (players.players[i].posHistory.length>0) {
@@ -139,34 +134,35 @@ function currentPos(message, args) {
 					if (pos[0]>lastPos[0]&&pos[1]==lastPos[1]) dir = "East";
 					if (pos[0]<lastPos[0]&&pos[1]==lastPos[1]) dir = "West";
 					
-					DEBUG && console.log(`**__${gamertag}'s current positional data:__**`)
-					DEBUG && console.log(`**${gamertag}** has moved **__${distance}m @${theta}° ${dir}__**`)
-					DEBUG && console.log(`**From Last Position:** ${lastPos[0]} / ${lastPos[1]}  at  **Last Time:** ${players.players[i].posHistory[players.players[i].posHistory.length-1].time}`)
-					DEBUG && console.log(`**To Latest Position:** ${pos[0]} / ${pos[1]}  at  **Latest Time:** ${players.players[i].time}\n\n------------- End Current Player Pos -------------`)
+					if(DEBUG) console.log(`**__${gamertag}'s current positional data:__**`)
+					if(DEBUG) console.log(`**${gamertag}** has moved **__${distance}m @${theta}° ${dir}__**`)
+					if(DEBUG) console.log(`**From Last Position:** ${lastPos[0]} / ${lastPos[1]}  at  **Last Time:** ${players.players[i].posHistory[players.players[i].posHistory.length-1].time}`)
+					if(DEBUG) console.log(`**To Latest Position:** ${pos[0]} / ${pos[1]}  at  **Latest Time:** ${players.players[i].time}\n\n------------- End Current Player Pos -------------`)
 
 					message.channel.send(`**__${gamertag}'s current positional data:__**`)
 					message.channel.send(`**${gamertag}** has moved **__${distance}m @${theta}° ${dir}__**`);
 					message.channel.send(`**From Last Position:** \`${lastPos[0]} / ${lastPos[1]}\`  at  **Last Time:** \`${players.players[i].posHistory[players.players[i].posHistory.length-1].time}\``);
 					return message.channel.send(`**To Latest Position:** \`${pos[0]} / ${pos[1]}\`  at  **Latest Time:** \`${players.players[i].time}\``);
 				}
-				DEBUG && console.log(`**__${gamertag}'s current positional data:__**`)
-				DEBUG && console.log(`**Latest Position:** ${pos[0]} / ${pos[1]}  at  **Latest Time:** ${players.players[i].time}\n\n------------- End Current Player Pos -------------`)
+				if(DEBUG) console.log(`**__${gamertag}'s current positional data:__**`)
+				if(DEBUG) console.log(`**Latest Position:** ${pos[0]} / ${pos[1]}  at  **Latest Time:** ${players.players[i].time}\n\n------------- End Current Player Pos -------------`)
 				message.channel.send(`**__${gamertag}'s current positional data:__**`)
 				return message.channel.send(`**Latest Position:** \`${pos[0]} / ${pos[1]}\`  at  **Latest Time:** \`${players.players[i].time}\``);	
 			}
 		}
-		DEBUG && console.log(`Player \`${gamertag}\` not found\n\n------------- End Current Player Pos -------------`)
+		// if(DEBUG) console.log(`Player \`${gamertag}\` not found\n\n------------- End Current Player Pos -------------`)
+		console.log(`Player \`${gamertag}\` not found\n\n------------- End Current Player Pos -------------`)
 		return message.channel.send(`Player \`${gamertag}\` not found`);
 	});
 }
 
 function checkPosHistory(message, args) {
-	DEBUG && console.log("\n------------- Begin Player Pos History -------------")
-	if (args.length==0) return message.channel.send(`You need to provide a gamertag`);
+	if(DEBUG) console.log("\n------------- Begin Player Pos History -------------")
+	if (args.length==0) {if(DEBUG){console.log("ERROR: No Gamertag provided\n\n------------- End Player History Pos -------------")}return message.channel.send(`You need to provide a gamertag`);}
 	exec("python collect.py", (error, stdout, stderr) => {
-    if (error!=null&&error!=undefined&&error!="") {DEBUG && console.log("ERROR: ",error,"\n\n------------- End Player Pos History -------------");return message.channel.send(error);}
-    if (stderr!=null&&stderr!=undefined&&stderr!="") {DEBUG && console.log("STD ERROR: ",stderr,"\n\n------------- End Player Pos History -------------");return message.channel.send(stderr);}
-    DEBUG && console.log("Successfully executed collect.py");	
+    if (error!=null&&error!=undefined&&error!="") {if(DEBUG){console.log("ERROR: ",error,"\n\n------------- End Player Pos History -------------");}return message.channel.send(error);}
+    if (stderr!=null&&stderr!=undefined&&stderr!="") {if(DEBUG){console.log("STD ERROR: ",stderr,"\n\n------------- End Player Pos History -------------");}return message.channel.send(stderr);}
+    if(DEBUG) console.log("Successfully executed collect.py");	
 		let players = require('./players.json');
 		let gamertag=""
 		if (args.length>1) {
@@ -178,15 +174,15 @@ function checkPosHistory(message, args) {
 		} else {gamertag=args[0]}
 		for (let i = 0; i < players.players.length; i++) {
 			if (players.players[i].gamertag==gamertag) {
-				if (players.players[i].time==null) DEBUG && console.log(`Player \`${gamertag}\` has no position data.`);return message.channel.send(`Player \`${gamertag}\` has no position data.`);
-				DEBUG && console.log(`**__${gamertag}'s positional history:__**`);
-				DEBUG && console.log(`**Latest Positions:** \`${players.players[i].pos[0]} / ${players.players[i].pos[1]}\`  at  **Latest Time:** \`${players.players[i].time}\``);
+				if (players.players[i].time==null) if(DEBUG){console.log(`Player \`${gamertag}\` has no position data.`);}return message.channel.send(`Player \`${gamertag}\` has no position data.`);
+				if(DEBUG) console.log(`**__${gamertag}'s positional history:__**`);
+				if(DEBUG) console.log(`**Latest Positions:** \`${players.players[i].pos[0]} / ${players.players[i].pos[1]}\`  at  **Latest Time:** \`${players.players[i].time}\``);
 				let playerHistory = [];
 				message.channel.send(`**__${gamertag}'s positional history:__**`)
 				message.channel.send(`**Latest Positions:** \`${players.players[i].pos[0]} / ${players.players[i].pos[1]}\`  at  **Latest Time:** \`${players.players[i].time}\``);	
 				message.channel.send(`Collecting Position History...`);
 				for (let j = 0; j < players.players[i].posHistory.length; j++) {
-					DEBUG && console.log(`**Position:** ${players.players[i].posHistory[j].pos[0]} / ${players.players[i].posHistory[j].pos[1]}  at  **Time:** ${players.players[i].posHistory[j].time}`)
+					if(DEBUG) console.log(`**Position:** ${players.players[i].posHistory[j].pos[0]} / ${players.players[i].posHistory[j].pos[1]}  at  **Time:** ${players.players[i].posHistory[j].time}`)
 					playerHistory.push(`**Position:** \`${players.players[i].posHistory[j].pos[0]} / ${players.players[i].posHistory[j].pos[1]}\`  at  **Time:** \`${players.players[i].posHistory[j].time}\``);	
 				}
 				message.channel.send(playerHistory);
@@ -208,10 +204,10 @@ function checkPosHistory(message, args) {
 					if (pos[0]==lastPos[0]&&pos[1]>lastPos[1]) dir = "East";
 					if (pos[0]==lastPos[0]&&pos[1]<lastPos[1]) dir = "West";
 					
-					DEBUG && console.log(`**__${gamertag}'s current positional data:__**`)
-					DEBUG && console.log(`**${gamertag}** has moved **__${distance}m @${theta}° ${dir}__**`)
-					DEBUG && console.log(`**From Last Position:** ${lastPos[0]} / ${lastPos[1]}  at  **Last Time:** ${players.players[i].posHistory[players.players[i].posHistory.length-1].time}`)
-					DEBUG && console.log(`**To Latest Position:** ${pos[0]} / ${pos[1]}  at  **Latest Time:** ${players.players[i].time}\n\n------------- End Player Pos History -------------`)
+					if(DEBUG) console.log(`**__${gamertag}'s current positional data:__**`)
+					if(DEBUG) console.log(`**${gamertag}** has moved **__${distance}m @${theta}° ${dir}__**`)
+					if(DEBUG) console.log(`**From Last Position:** ${lastPos[0]} / ${lastPos[1]}  at  **Last Time:** ${players.players[i].posHistory[players.players[i].posHistory.length-1].time}`)
+					if(DEBUG) console.log(`**To Latest Position:** ${pos[0]} / ${pos[1]}  at  **Latest Time:** ${players.players[i].time}\n\n------------- End Player Pos History -------------`)
 
 					message.channel.send(`**__${gamertag}'s current positional data:__**`)
 					message.channel.send(`**${gamertag}** has moved **__${distance}m @${theta}° ${dir}__**`);
@@ -219,36 +215,36 @@ function checkPosHistory(message, args) {
 					message.channel.send(`**To Latest Position:** \`${pos[0]} / ${pos[1]}\`  at  **Latest Time:** \`${players.players[i].time}\``);
 					return message.channel.send("Done");
 				}
-				DEBUG && console.log(`**__${gamertag}'s current positional data:__**`)
-				DEBUG && console.log(`**Latest Position:** ${pos[0]} / ${pos[1]}  at  **Latest Time:** ${players.players[i].time}\n\n------------- End Player Pos History -------------`)
+				if(DEBUG) console.log(`**__${gamertag}'s current positional data:__**`)
+				if(DEBUG) console.log(`**Latest Position:** ${pos[0]} / ${pos[1]}  at  **Latest Time:** ${players.players[i].time}\n\n------------- End Player Pos History -------------`)
 				message.channel.send(`**__${gamertag}'s current positional data:__**`)
 				message.channel.send(`**Latest Position:** \`${pos[0]} / ${pos[1]}\`  at  **Latest Time:** \`${players.players[i].time}\``);	
 				return message.channel.send("Done");
 			}
 		}
-		DEBUG && console.log(`Player \`${gamertag}\` not found\n\n------------- End Player Pos History -------------`)
+		if(DEBUG) console.log(`Player \`${gamertag}\` not found\n\n------------- End Player Pos History -------------`)
 		return message.channel.send(`Player \`${gamertag}\` not found`);
 	});
 }
 
 function updateLogs(message) {
-	DEBUG && console.log("\n------------- Begin Force Update Logs -------------")
+	if(DEBUG) console.log("\n------------- Begin Force Update Logs -------------")
 	exec("python collect.py", (error, stdout, stderr) => {
-    if (error!=null&&error!=undefined&&error!="") {DEBUG && console.log("ERROR: ",error,"\n\n------------- End Force Update Logs -------------");return message.channel.send(error);}
-    if (stderr!=null&&stderr!=undefined&&stderr!="") {DEBUG && console.log("STD ERROR: ",stderr,"\n\n------------- End Force Update Logs -------------");return message.channel.send(stderr);}
-    DEBUG && console.log("Successfully executed collect.py");
-		DEBUG && console.log(`Updated Logs\n\n------------- End Force Update Logs -------------`)
+    if (error!=null&&error!=undefined&&error!="") {if(DEBUG){console.log("ERROR: ",error,"\n\n------------- End Force Update Logs -------------");}return message.channel.send(error);}
+    if (stderr!=null&&stderr!=undefined&&stderr!="") {if(DEBUG){console.log("STD ERROR: ",stderr,"\n\n------------- End Force Update Logs -------------");}return message.channel.send(stderr);}
+    if(DEBUG) console.log("Successfully executed collect.py");
+		if(DEBUG) console.log(`Updated Logs\n\n------------- End Force Update Logs -------------`)
 		return message.channel.send(`Updated Logs`);
 	});
 }
 
 function onlineStatus(message, args) {
-	DEBUG && console.log("\n------------- Begin Check Player Connection Status -------------")
+	if(DEBUG) console.log("\n------------- Begin Check Player Connection Status -------------")
 	if (args.length==0) return message.channel.send(`You need to provide a gamertag`);
 	exec("python collect.py", (error, stdout, stderr) => {
-    if (error!=null&&error!=undefined&&error!="") {DEBUG && console.log("ERROR: ",error,"\n\n------------- End Check Player Connection Status -------------");return message.channel.send(error);}
-    if (stderr!=null&&stderr!=undefined&&stderr!="") {DEBUG && console.log("STD ERROR: ",stderr,"\n\n------------- End Check Player Connection Status -------------");return message.channel.send(stderr);}
-    DEBUG && console.log("Successfully executed collect.py");	
+    if (error!=null&&error!=undefined&&error!="") {if(DEBUG){console.log("ERROR: ",error,"\n\n------------- End Check Player Connection Status -------------");}return message.channel.send(error);}
+    if (stderr!=null&&stderr!=undefined&&stderr!="") {if(DEBUG){console.log("STD ERROR: ",stderr,"\n\n------------- End Check Player Connection Status -------------");}return message.channel.send(stderr);}
+    if(DEBUG) console.log("Successfully executed collect.py");	
 		let players = require('./players.json');
 		let gamertag=""
 		if (args.length>1) {
@@ -260,28 +256,28 @@ function onlineStatus(message, args) {
 		} else {gamertag=args[0]}
 		for (let i = 0; i < players.players.length; i++) {
 			if (players.players[i].gamertag==gamertag) {
-				DEBUG && console.log(`Player \`${gamertag}\` is \`${players.players[i].connectionStatus}\`\n\n------------- End Check Player Connection Status -------------`);
+				if(DEBUG) console.log(`Player \`${gamertag}\` is \`${players.players[i].connectionStatus}\`\n\n------------- End Check Player Connection Status -------------`);
 				return message.channel.send(`Player \`${gamertag}\` is \`${players.players[i].connectionStatus}\``);
 			}
 		}
-		DEBUG && console.log(`Player \`${gamertag}\` not found\n\n------------- End Check Player Connection Status -------------`)
+		if(DEBUG) console.log(`Player \`${gamertag}\` not found\n\n------------- End Check Player Connection Status -------------`)
 		return message.channel.send(`Player \`${gamertag}\` not found`);
 	});
 }
 
 function restartServer(message) {
-	DEBUG && console.log("\n------------- Begin Restart Server -------------")
+	if(DEBUG) console.log("\n------------- Begin Restart Server -------------")
 	exec("python restart.py", (error, stdout, stderr) => {
-		if (error!=null&&error!=undefined&&error!="") {DEBUG && console.log("ERROR: ",error,"\n\n------------- End Restart Server -------------");return message.channel.send(error);}
-    if (stderr!=null&&stderr!=undefined&&stderr!="") {DEBUG && console.log("STD ERROR: ",stderr,"\n\n------------- End Restart Server -------------");return message.channel.send(stderr);}
-    DEBUG && console.log("Successfully executed restart.py");
-    DEBUG && console.log("Restarting Server...\n\n------------- End Restart Server -------------")
+		if (error!=null&&error!=undefined&&error!="") {if(DEBUG){console.log("ERROR: ",error,"\n\n------------- End Restart Server -------------");}return message.channel.send(error);}
+    if (stderr!=null&&stderr!=undefined&&stderr!="") {if(DEBUG){console.log("STD ERROR: ",stderr,"\n\n------------- End Restart Server -------------");}return message.channel.send(stderr);}
+    if(DEBUG) console.log("Successfully executed restart.py");
+    if(DEBUG) console.log("Restarting Server...\n\n------------- End Restart Server -------------")
     return message.channel.send("Restarting Server...");
 	});
 }
 
 client.on('ready', () => {
-  DEBUG && console.log(`Logged in as ${client.user.tag}`);
+  if(DEBUG) console.log(`Logged in as ${client.user.tag}`);
 });
 
 // Basic Commands
@@ -303,27 +299,32 @@ client.on('message', async (message) => {
       value: `
       **${prefix}help** - \`Displays this help page\`
       **${prefix}ping** - \`Responds with Pong to check Bot responce\`
-      **${prefix}start** - \`Starts system\`
       **${prefix}playerList** - \`Shows current players\`
       **${prefix}playerHistory** <gamertag> - \`Check specific player history\`
-      **${prefix}forceCheck** - \`Forces a check for player in base\`
       **${prefix}currentPos** <gamertag> - \`Forces a check for player in base\`
       **${prefix}onlineStatus** <gamertag> - \`Check if player is online\`
 			**${prefix}restartServer** - \`Restarts Server\`      
       `,
       inline: false
+      // Deprecated For Now
+     	// **${prefix}start** - \`Starts system\`
+    	// **${prefix}forceCheck** - \`Forces a check for player in base\` 
     })
 
   // Commands
-  if (command == 'ping') {DEBUG && console.log("\nPing\n");return message.channel.send('Pong!');}
+  if (command == 'ping') {if(DEBUG) console.log("\nPing\n");return message.channel.send('Pong!');}
   if (command == 'help') return message.channel.send(help);
-  if (command == 'start') {DEBUG && console.log("\nSystem Alarm Started");message.channel.send("System Alarm Started");startSystem(message);}
   if (command == 'playerlist') {playerList(message);}
   if (command == 'playerhistory') {checkPosHistory(message, args);}
-  if (command == 'forcecheck') {forceCheck(message);}
   if (command == 'currentpos') {currentPos(message, args);}
   if (command == 'updatelogs') {updateLogs(message);}
   if (command == 'onlinestatus') {onlineStatus(message, args);}
   if (command == 'restartserver') {restartServer(message);}
+
+  /*
+  	Deprecated Commands:
+	  if (command == 'start') {if(DEBUG) console.log("\nSystem Alarm Started");message.channel.send("System Alarm Started");startSystem(message);}
+	  if (command == 'forcecheck') {forceCheck(message);}
+	*/
 });
 client.login(process.env.token);
