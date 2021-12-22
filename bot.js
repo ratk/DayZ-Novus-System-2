@@ -101,7 +101,7 @@ function playerList(message) {
 		let offlinePlayers = [];
 
 		let online = new Discord.MessageEmbed()
-    	.setColor('#0099ff')
+    	.setColor('#ed3e24')
     	.setTitle('**__Players:__**')
     	.setAuthor('McDazzzled', 'https://avatars.githubusercontent.com/u/48144618?v=4', 'https://github.com/SowinskiBraeden')
 
@@ -266,7 +266,7 @@ client.on('message', async (message) => {
 
   // Help Embed
   const help = new Discord.MessageEmbed()
-    .setColor('#0099ff')
+    .setColor('#ed3e24')
     .setTitle('**Commands:**')
     .setAuthor('McDazzzled', 'https://avatars.githubusercontent.com/u/48144618?v=4', 'https://github.com/SowinskiBraeden')
     .setDescription('Novus Security Commmand')
