@@ -7,11 +7,11 @@ dotenv.config();
 const minute = 60000; //1 minute in milliseconds
 let i = 0;
 
+const log = function(x){if(DEBUG)console.log(x)};
+
 // const whitelist = require('./whitelist.json').players;
 let DEBUG = (process.env.DEBUG=="true");
 log("Debug mode: ", DEBUG);
-
-const log = function(x){if(DEBUG)console.log(x)};
 
 const getGamertag = function(t){let n;if(1<t.length)for(let e=0;e<t.length;e++)e+1==t.length?n+=t[e]:n=n+t[e]+" ";else n=t[0];return n};
 
