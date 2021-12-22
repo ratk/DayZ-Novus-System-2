@@ -70,7 +70,7 @@ def collectPlayerData():
     for line in cleanLines:
       beginPlayer = 19 # Player names always start here
       endPlayer = line.strip("\n").find('(')-2
-      playerName = line.strip("\n")[19:line.strip("\n").find('(')-2]
+      playerName = line.strip("\n")[beginPlayer:endPlayer]
       
       # Get player ID
       beginID = line.strip("\n").find('(id=')+4
