@@ -11,7 +11,9 @@ let i = 0;
 let DEBUG = (process.env.DEBUG=="true");
 log("Debug mode: ", DEBUG);
 
-const log = function(x){if(DEBUG)console.log(x)}
+const log = function(x){if(DEBUG)console.log(x)};
+
+const getGamertag = function(t){let n;if(1<t.length)for(let e=0;e<t.length;e++)e+1==t.length?n+=t[e]:n=n+t[e]+" ";else n=t[0];return n};
 
 // function check(message) {
 //   log("\n------------- Begin Check -------------")
@@ -70,6 +72,24 @@ const log = function(x){if(DEBUG)console.log(x)}
 // 	});
 // }
 
+function calculateVector(pos, lastPos) {
+	let diff = [Math.round(lastPos[0] - pos[0]), Math.round(lastPos[1] - pos[1])];
+	let distance = Math.sqrt(Math.pow(diff[0], 2) + Math.pow(diff[1], 2)).toFixed(0)
+	let theta = Math.abs(Math.atan(diff[1]/diff[0])*180/Math.PI).toFixed(0);
+	let dir;
+
+	if (pos[0]>lastPos[0]&&pos[1]>lastPos[1]) dir = "North East";
+	if (pos[0]>lastPos[0]&&pos[1]<lastPos[1]) dir = "South East";
+	if (pos[0]==lastPos[0]&&pos[1]>lastPos[1]) dir = "North";
+	if (pos[0]==lastPos[0]&&pos[1]<lastPos[1]) dir = "South";
+	if (pos[0]<lastPos[0]&&pos[1]>lastPos[1]) dir = "North West";
+	if (pos[0]<lastPos[0]&&pos[1]<lastPos[1]) dir = "South West";
+	if (pos[0]>lastPos[0]&&pos[1]==lastPos[1]) dir = "East";
+	if (pos[0]<lastPos[0]&&pos[1]==lastPos[1]) dir = "West";
+
+	return {distance, theta, dir}
+}
+
 function playerList(message) {
 	log("\n------------- Begin Collect Player List -------------");
 	exec("python collect.py", (error, stdout, stderr) => {
@@ -77,8 +97,8 @@ function playerList(message) {
     if (stderr!=null&&stderr!=undefined&&stderr!="") log("STD ERROR: ",stderr,"\n\n------------- End Collect Player List -------------");return message.channel.send(stderr);
     log("Successfully executed collect.py");
 		let players = require('./players.json');
-		let onlinePlayers = ["Online:"];
-		let offlinePlayers = ["Offline:"];
+		let onlinePlayers = [];
+		let offlinePlayers = [];
 
 		let online = new Discord.MessageEmbed()
     	.setColor('#0099ff')
@@ -94,7 +114,7 @@ function playerList(message) {
 			}
 			online.addFields({ name: `**${players.players[i].gamertag}** is:`, value: `\`${players.players[i].connectionStatus}\``, inline: false });
 		}
-		log(onlinePlayers,offlinePlayers,`\n\n------------- End Collect Player List -------------`);
+		log("Online:",onlinePlayers,"\nOffline:",offlinePlayers,`\n\n------------- End Collect Player List -------------`);
 		return message.channel.send(online);
 	});
 }
@@ -107,14 +127,7 @@ function currentPos(message, args) {
     if (stderr!=null&&stderr!=undefined&&stderr!="") log("STD ERROR: ",stderr,"\n\n------------- End Current Player Pos -------------");return message.channel.send(stderr);
     log("Successfully executed collect.py");		
 		let players = require('./players.json');
-		let gamertag=""
-		if (args.length>1) {
-			for (let i = 0; i < args.length; i++) {
-				if ((i+1)==args.length) {
-					gamertag = gamertag + args[i];
-				} else gamertag = gamertag + args[i] + " ";
-			}
-		} else {gamertag=args[0]}
+		let gamertag = getGamertag(args);
 		for (let i = 0; i < players.players.length; i++) {
 			if (players.players[i].gamertag==gamertag) {
 				if (players.players[i].time==null) log(`Player \`${gamertag}\` has no position data.`);return message.channel.send(`Player \`${gamertag}\` has no position data.`);
@@ -122,19 +135,7 @@ function currentPos(message, args) {
 				message.channel.send("Calculating...")
 				if (players.players[i].posHistory.length>0) {
 					let lastPos = players.players[i].posHistory[players.players[i].posHistory.length-1].pos
-					let diff = [Math.round(lastPos[0] - pos[0]), Math.round(lastPos[1] - pos[1])];
-					let distance = Math.sqrt(Math.pow(diff[0], 2) + Math.pow(diff[1], 2)).toFixed(0)
-					let theta = Math.abs(Math.atan(diff[1]/diff[0])*180/Math.PI).toFixed(0);
-					let dir;
-
-					if (pos[0]>lastPos[0]&&pos[1]>lastPos[1]) dir = "North East";
-					if (pos[0]>lastPos[0]&&pos[1]<lastPos[1]) dir = "South East";
-					if (pos[0]==lastPos[0]&&pos[1]>lastPos[1]) dir = "North";
-					if (pos[0]==lastPos[0]&&pos[1]<lastPos[1]) dir = "South";
-					if (pos[0]<lastPos[0]&&pos[1]>lastPos[1]) dir = "North West";
-					if (pos[0]<lastPos[0]&&pos[1]<lastPos[1]) dir = "South West";
-					if (pos[0]>lastPos[0]&&pos[1]==lastPos[1]) dir = "East";
-					if (pos[0]<lastPos[0]&&pos[1]==lastPos[1]) dir = "West";
+					let {distance, theta, dir} = calculateVector(pos, lastPos);
 					
 					log(`**__${gamertag}'s current positional data:__**`)
 					log(`**${gamertag}** has moved **__${distance}m @${theta}° ${dir}__**`)
@@ -163,16 +164,9 @@ function checkPosHistory(message, args) {
 	exec("python collect.py", (error, stdout, stderr) => {
     if (error!=null&&error!=undefined&&error!="") log("ERROR: ",error,"\n\n------------- End Player Pos History -------------");return message.channel.send(error);
     if (stderr!=null&&stderr!=undefined&&stderr!="") log("STD ERROR: ",stderr,"\n\n------------- End Player Pos History -------------");return message.channel.send(stderr);
-     log("Successfully executed collect.py");	
+    log("Successfully executed collect.py");	
 		let players = require('./players.json');
-		let gamertag=""
-		if (args.length>1) {
-			for (let i = 0; i < args.length; i++) {
-				if ((i+1)==args.length) {
-					gamertag = gamertag + args[i];
-				} else gamertag = gamertag + args[i] + " ";
-			}
-		} else {gamertag=args[0]}
+		let gamertag = getGamertag(args);
 		for (let i = 0; i < players.players.length; i++) {
 			if (players.players[i].gamertag==gamertag) {
 				if (players.players[i].time==null) log(`Player \`${gamertag}\` has no position data.`);return message.channel.send(`Player \`${gamertag}\` has no position data.`);
@@ -191,19 +185,7 @@ function checkPosHistory(message, args) {
 				let pos = players.players[i].pos;
 				if (players.players[i].posHistory.length>0) {
 					let lastPos = players.players[i].posHistory[players.players[i].posHistory.length-1].pos
-					let diff = [Math.round(lastPos[0] - pos[0]), Math.round(lastPos[1] - pos[1])];
-					let distance = Math.sqrt(Math.pow(diff[0], 2) + Math.pow(diff[1], 2)).toFixed(2);
-					let theta = Math.abs(Math.atan(diff[1]/diff[0])*180/Math.PI).toFixed(1);
-					let dir;
-
-					if (pos[0]>lastPos[0]&&pos[1]>lastPos[1]) dir = "North East";
-					if (pos[0]<lastPos[0]&&pos[1]>lastPos[1]) dir = "South East";
-					if (pos[0]>lastPos[0]&&pos[1]==lastPos[1]) dir = "North";
-					if (pos[0]<lastPos[0]&&pos[1]==lastPos[1]) dir = "South";
-					if (pos[0]>lastPos[0]&&pos[1]<lastPos[1]) dir = "North West";
-					if (pos[0]<lastPos[0]&&pos[1]<lastPos[1]) dir = "South West";
-					if (pos[0]==lastPos[0]&&pos[1]>lastPos[1]) dir = "East";
-					if (pos[0]==lastPos[0]&&pos[1]<lastPos[1]) dir = "West";
+					let {distance, theta, dir} = calculateVector(pos, lastPos);
 					
 					log(`**__${gamertag}'s current positional data:__**`);
 					log(`**${gamertag}** has moved **__${distance}m @${theta}° ${dir}__**`);
@@ -247,14 +229,7 @@ function onlineStatus(message, args) {
     if (stderr!=null&&stderr!=undefined&&stderr!="") log("STD ERROR: ",stderr,"\n\n------------- End Check Player Connection Status -------------");return message.channel.send(stderr);
     log("Successfully executed collect.py");	
 		let players = require('./players.json');
-		let gamertag=""
-		if (args.length>1) {
-			for (let i = 0; i < args.length; i++) {
-				if ((i+1)==args.length) {
-					gamertag = gamertag + args[i];
-				} else gamertag = gamertag + args[i] + " ";
-			}
-		} else {gamertag=args[0]}
+		let gamertag = getGamertag(args);
 		for (let i = 0; i < players.players.length; i++) {
 			if (players.players[i].gamertag==gamertag) {
 				log(`Player \`${gamertag}\` is \`${players.players[i].connectionStatus}\`\n\n------------- End Check Player Connection Status -------------`);
