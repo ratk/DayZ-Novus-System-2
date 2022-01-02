@@ -5,7 +5,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const minute = 60000; //1 minute in milliseconds
-let i = 0;
+let t = 0;
 
 const log = function(x){if(DEBUG)console.log(x)};
 
@@ -29,6 +29,7 @@ function check(message) {
 			// Inside Bounderies
 			if (px>2326.84&&px<2995.71&&py<1625.04&&py>1061.15) {
 				if (!whitelist.includes(players.players[i].gamertag)) {
+					t = 0;
 					log(`Player ${players.players[i].gamertag} found in base.\n\n------------- End Check -------------`);
 					return message.channel.send(`@everyone \`${players.players[i].gamertag}\` is in our base!`);
 				}
@@ -40,11 +41,11 @@ function check(message) {
 
 function startSystem(message) {
 	check(message);
-  i += 1;
+  t += 1;
   setTimeout(function() {
-    if (i <= 48) {
+    if (t <= 48) {
       startSystem(message);
-    } else {log("\nSystem Alarm Disabled");return message.channel.send("System Alarm Disabled");}
+    } else {t=0;log("\nSystem Alarm Disabled");return message.channel.send("System Alarm Disabled");}
   }, minute*5);
 }
 
@@ -289,13 +290,16 @@ client.on('message', async (message) => {
   // Commands
   if (command == 'ping') { log("\nPing\n");return message.channel.send('Pong!');}
   if (command == 'help') return message.channel.send(help);
-  if (command == 'playerlist') {playerList(message);}
-  if (command == 'playerhistory') {checkPosHistory(message, args);}
-  if (command == 'currentpos') {currentPos(message, args);}
-  if (command == 'updatelogs') {updateLogs(message);}
-  if (command == 'onlinestatus') {onlineStatus(message, args);}
-  if (command == 'restartserver') {restartServer(message);}
+  if (command == 'playerlist') playerList(message);
+  if (command == 'playerhistory') checkPosHistory(message, args);
+  if (command == 'currentpos') currentPos(message, args);
+  if (command == 'updatelogs') updateLogs(message);
+  if (command == 'onlinestatus') onlineStatus(message, args);
+  if (command == 'restartserver') restartServer(message);
   if (command == 'start') { log("\nSystem Alarm Started");message.channel.send("System Alarm Started");startSystem(message);}
-  if (command == 'forcecheck') {forceCheck(message);}	
+  if (command == 'forcecheck') forceCheck(message);
+  
+  // Update 't' to 48 will force 'startSystem' func stop itself
+  if (command == 'stop') t = 48;
 });
 client.login(process.env.token);
