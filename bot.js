@@ -11,15 +11,15 @@ const log = function(x){if(DEBUG)console.log(x)};
 
 // const whitelist = require('./whitelist.json').players;
 let DEBUG = (process.env.DEBUG=="true");
-log("Debug mode: ", DEBUG);
+log(`Debug mode: ${DEBUG}`);
 
 const getGamertag = function(t){let n;if(1<t.length)for(let e=0;e<t.length;e++)e+1==t.length?n+=t[e]:n=n+t[e]+" ";else n=t[0];return n};
 
 function check(message) {
   log("\n------------- Begin Check -------------")
 	exec("python collect.py", (error, stdout, stderr) => {
-    if (error!=null&&error!=undefined&&error!="") log("ERROR: ",error,"\n\n------------- End Check -------------");return message.channel.send(error);
-    if (stderr!=null&&stderr!=undefined&&stderr!="") log("STD ERROR: ",stderr,"\n\n------------- End Check -------------");return message.channel.send(stderr);
+    if (error!=null&&error!=undefined&&error!="") {log("ERROR: ",error,"\n\n------------- End Check -------------");return message.channel.send(error);}
+    if (stderr!=null&&stderr!=undefined&&stderr!="") {log("STD ERROR: ",stderr,"\n\n------------- End Check -------------");return message.channel.send(stderr);}
     log("Successfully executed collect.py");
     // Check Data
 		let players = require('./players.json');
@@ -51,8 +51,8 @@ function startSystem(message) {
 function forceCheck(message) {
 	log("\n------------- Begin Force Check -------------");
 	exec("python collect.py", (error, stdout, stderr) => {
-  	if (error!=null&&error!=undefined&&error!="") log("ERROR: ",error,"\n\n------------- End Force Check -------------");return message.channel.send(error);
-  	if (stderr!=null&&stderr!=undefined&&stderr!="") log("STD ERROR: ",stderr,"\n\n------------- End Force Check -------------");return message.channel.send(stderr);
+  	if (error!=null&&error!=undefined&&error!="") {log("ERROR: ",error,"\n\n------------- End Force Check -------------");return message.channel.send(error);}
+  	if (stderr!=null&&stderr!=undefined&&stderr!="") {log("STD ERROR: ",stderr,"\n\n------------- End Force Check -------------");return message.channel.send(stderr);}
     log("Successfully executed collect.py");
     message.channel.send("Checking...")
 	 	let players = require('./players.json');
@@ -93,8 +93,8 @@ function calculateVector(pos, lastPos) {
 function playerList(message) {
 	log("\n------------- Begin Collect Player List -------------");
 	exec("python collect.py", (error, stdout, stderr) => {
-		if (error!=null&&error!=undefined&&error!="") log("ERROR: ",error,"\n\n------------- End Collect Player List -------------");return message.channel.send(error);
-    if (stderr!=null&&stderr!=undefined&&stderr!="") log("STD ERROR: ",stderr,"\n\n------------- End Collect Player List -------------");return message.channel.send(stderr);
+		if (error!=null&&error!=undefined&&error!="") {log("ERROR: ",error,"\n\n------------- End Collect Player List -------------");return message.channel.send(error);}
+    if (stderr!=null&&stderr!=undefined&&stderr!="") {log("STD ERROR: ",stderr,"\n\n------------- End Collect Player List -------------");return message.channel.send(stderr);}
     log("Successfully executed collect.py");
 		let players = require('./players.json');
 		let onlinePlayers = [];
@@ -105,7 +105,7 @@ function playerList(message) {
     	.setTitle('**__Players:__**')
     	.setAuthor('McDazzzled', 'https://avatars.githubusercontent.com/u/48144618?v=4', 'https://github.com/SowinskiBraeden')
 
-		if (players.players.length==0) log("No players in logs");return message.channel.send("No players in logs");
+    if (players.players.length==0) {log("No players in logs\n\n------------- End Collect Player List -------------");return message.channel.send("No players in logs");}
 		for (let i = 0; i < players.players.length; i++) {
 			if (players.players[i].connectionStatus=="Online") {
 				onlinePlayers.push(players.players[i].gamertag);
@@ -121,16 +121,16 @@ function playerList(message) {
 
 function currentPos(message, args) {
 	log("\n------------- Begin Current Player Pos -------------")
-	if (args.length==0) log("ERROR: No Gamertag provided\n\n------------- End Current Player Pos -------------");return message.channel.send(`You need to provide a gamertag`);
+	if (args.length==0) {log("ERROR: No Gamertag provided\n\n------------- End Current Player Pos -------------");return message.channel.send(`You need to provide a gamertag`);}
 	exec("python collect.py", (error, stdout, stderr) => {
-    if (error!=null&&error!=undefined&&error!="") log("ERROR: ",error,"\n\n------------- End Current Player Pos -------------");return message.channel.send(error);
-    if (stderr!=null&&stderr!=undefined&&stderr!="") log("STD ERROR: ",stderr,"\n\n------------- End Current Player Pos -------------");return message.channel.send(stderr);
+    if (error!=null&&error!=undefined&&error!="") {log("ERROR: ",error,"\n\n------------- End Current Player Pos -------------");return message.channel.send(error);}
+    if (stderr!=null&&stderr!=undefined&&stderr!="") {log("STD ERROR: ",stderr,"\n\n------------- End Current Player Pos -------------");return message.channel.send(stderr);}
     log("Successfully executed collect.py");		
 		let players = require('./players.json');
 		let gamertag = getGamertag(args);
 		for (let i = 0; i < players.players.length; i++) {
 			if (players.players[i].gamertag==gamertag) {
-				if (players.players[i].time==null) log(`Player \`${gamertag}\` has no position data.`);return message.channel.send(`Player \`${gamertag}\` has no position data.`);
+				if (players.players[i].time==null) {log(`Player \`${gamertag}\` has no position data.`);return message.channel.send(`Player \`${gamertag}\` has no position data.`);}
 				let pos = players.players[i].pos;
 				message.channel.send("Calculating...")
 				if (players.players[i].posHistory.length>0) {
@@ -160,16 +160,16 @@ function currentPos(message, args) {
 
 function checkPosHistory(message, args) {
 	log("\n------------- Begin Player Pos History -------------")
-	if (args.length==0) log("ERROR: No Gamertag provided\n\n------------- End Player History Pos -------------");return message.channel.send(`You need to provide a gamertag`);
+	if (args.length==0) {log("ERROR: No Gamertag provided\n\n------------- End Player History Pos -------------");return message.channel.send(`You need to provide a gamertag`);}
 	exec("python collect.py", (error, stdout, stderr) => {
-    if (error!=null&&error!=undefined&&error!="") log("ERROR: ",error,"\n\n------------- End Player Pos History -------------");return message.channel.send(error);
-    if (stderr!=null&&stderr!=undefined&&stderr!="") log("STD ERROR: ",stderr,"\n\n------------- End Player Pos History -------------");return message.channel.send(stderr);
+    if (error!=null&&error!=undefined&&error!="") {log("ERROR: ",error,"\n\n------------- End Player Pos History -------------");return message.channel.send(error);}
+    if (stderr!=null&&stderr!=undefined&&stderr!="") {log("STD ERROR: ",stderr,"\n\n------------- End Player Pos History -------------");return message.channel.send(stderr);}
     log("Successfully executed collect.py");	
 		let players = require('./players.json');
 		let gamertag = getGamertag(args);
 		for (let i = 0; i < players.players.length; i++) {
 			if (players.players[i].gamertag==gamertag) {
-				if (players.players[i].time==null) log(`Player \`${gamertag}\` has no position data.`);return message.channel.send(`Player \`${gamertag}\` has no position data.`);
+				if (players.players[i].time==null) {log(`Player \`${gamertag}\` has no position data.`);return message.channel.send(`Player \`${gamertag}\` has no position data.`);}
 				log(`**__${gamertag}'s positional history:__**`);
 				log(`**Latest Positions:** \`${players.players[i].pos[0]} / ${players.players[i].pos[1]}\`  at  **Latest Time:** \`${players.players[i].time}\``);
 				let playerHistory = [];
@@ -213,8 +213,8 @@ function checkPosHistory(message, args) {
 function updateLogs(message) {
 	log("\n------------- Begin Force Update Logs -------------");
 	exec("python collect.py", (error, stdout, stderr) => {
-    if (error!=null&&error!=undefined&&error!="") log("ERROR: ",error,"\n\n------------- End Force Update Logs -------------");return message.channel.send(error);
-    if (stderr!=null&&stderr!=undefined&&stderr!="") log("STD ERROR: ",stderr,"\n\n------------- End Force Update Logs -------------");return message.channel.send(stderr);
+    if (error!=null&&error!=undefined&&error!="") {log("ERROR: ",error,"\n\n------------- End Force Update Logs -------------");return message.channel.send(error);}
+    if (stderr!=null&&stderr!=undefined&&stderr!="") {log("STD ERROR: ",stderr,"\n\n------------- End Force Update Logs -------------");return message.channel.send(stderr);}
     log("Successfully executed collect.py");
 		log(`Updated Logs\n\n------------- End Force Update Logs -------------`);
 		return message.channel.send(`Updated Logs`);
@@ -225,8 +225,8 @@ function onlineStatus(message, args) {
 	log("\n------------- Begin Check Player Connection Status -------------");
 	if (args.length==0) return message.channel.send(`You need to provide a gamertag`);
 	exec("python collect.py", (error, stdout, stderr) => {
-    if (error!=null&&error!=undefined&&error!="") log("ERROR: ",error,"\n\n------------- End Check Player Connection Status -------------");return message.channel.send(error);
-    if (stderr!=null&&stderr!=undefined&&stderr!="") log("STD ERROR: ",stderr,"\n\n------------- End Check Player Connection Status -------------");return message.channel.send(stderr);
+    if (error!=null&&error!=undefined&&error!="") {log("ERROR: ",error,"\n\n------------- End Check Player Connection Status -------------");return message.channel.send(error);}
+    if (stderr!=null&&stderr!=undefined&&stderr!="") {log("STD ERROR: ",stderr,"\n\n------------- End Check Player Connection Status -------------");return message.channel.send(stderr);}
     log("Successfully executed collect.py");	
 		let players = require('./players.json');
 		let gamertag = getGamertag(args);
@@ -244,8 +244,8 @@ function onlineStatus(message, args) {
 function restartServer(message) {
 	log("\n------------- Begin Restart Server -------------");
 	exec("python restart.py", (error, stdout, stderr) => {
-		if (error!=null&&error!=undefined&&error!="") log("ERROR: ",error,"\n\n------------- End Restart Server -------------");return message.channel.send(error);
-    if (stderr!=null&&stderr!=undefined&&stderr!="") log("STD ERROR: ",stderr,"\n\n------------- End Restart Server -------------");return message.channel.send(stderr);
+		if (error!=null&&error!=undefined&&error!="") {log("ERROR: ",error,"\n\n------------- End Restart Server -------------");return message.channel.send(error);}
+    if (stderr!=null&&stderr!=undefined&&stderr!="") {log("STD ERROR: ",stderr,"\n\n------------- End Restart Server -------------");return message.channel.send(stderr);}
     log("Successfully executed restart.py");
     log("Restarting Server...\n\n------------- End Restart Server -------------")
     return message.channel.send("Restarting Server...");
