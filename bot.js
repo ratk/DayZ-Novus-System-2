@@ -11,7 +11,7 @@ let n = 8; // Number of hours
 
 const log = function(x){if(DEBUG)console.log(x)};
 
-// const whitelist = require('./whitelist.json').players;
+const whitelist = require('./whitelist.json').players;
 let DEBUG = (process.env.DEBUG=="true");
 log(`Debug mode: ${DEBUG}`);
 
