@@ -3,9 +3,6 @@ logs.ADM
 players.json
 clean.txt
 
-# Custom
-whitelist.json
-
 # Dependencies
 node_modules/*
 
