@@ -15,62 +15,62 @@ log("Debug mode: ", DEBUG);
 
 const getGamertag = function(t){let n;if(1<t.length)for(let e=0;e<t.length;e++)e+1==t.length?n+=t[e]:n=n+t[e]+" ";else n=t[0];return n};
 
-// function check(message) {
-//   log("\n------------- Begin Check -------------")
-// 	exec("python collect.py", (error, stdout, stderr) => {
-//     if (error!=null&&error!=undefined&&error!="") log("ERROR: ",error,"\n\n------------- End Check -------------");return message.channel.send(error);
-//     if (stderr!=null&&stderr!=undefined&&stderr!="") log("STD ERROR: ",stderr,"\n\n------------- End Check -------------");return message.channel.send(stderr);
-//     log("Successfully executed collect.py");
-//     // Check Data
-// 		let players = require('./players.json');
-// 		for (let i = 0; i < players.players.length; i++) {
-// 			let px = players.players[i].pos[0];
-// 			let py = players.players[i].pos[1];
-// 			// Inside Bounderies
-// 			if (px>2326.84&&px<2995.71&&py<1625.04&&py>1061.15) {
-// 				if (!whitelist.includes(players.players[i].gamertag)) {
-// 					log(`Player ${players.players[i].gamertag} found in base.\n\n------------- End Check -------------`);
-// 					return message.channel.send(`@everyone \`${players.players[i].gamertag}\` is in our base!`);
-// 				}
-// 			}
-// 		}
-// 		log("No players found\n\n------------- End Check -------------");
-// 	});
-// }
+function check(message) {
+  log("\n------------- Begin Check -------------")
+	exec("python collect.py", (error, stdout, stderr) => {
+    if (error!=null&&error!=undefined&&error!="") log("ERROR: ",error,"\n\n------------- End Check -------------");return message.channel.send(error);
+    if (stderr!=null&&stderr!=undefined&&stderr!="") log("STD ERROR: ",stderr,"\n\n------------- End Check -------------");return message.channel.send(stderr);
+    log("Successfully executed collect.py");
+    // Check Data
+		let players = require('./players.json');
+		for (let i = 0; i < players.players.length; i++) {
+			let px = players.players[i].pos[0];
+			let py = players.players[i].pos[1];
+			// Inside Bounderies
+			if (px>2326.84&&px<2995.71&&py<1625.04&&py>1061.15) {
+				if (!whitelist.includes(players.players[i].gamertag)) {
+					log(`Player ${players.players[i].gamertag} found in base.\n\n------------- End Check -------------`);
+					return message.channel.send(`@everyone \`${players.players[i].gamertag}\` is in our base!`);
+				}
+			}
+		}
+		log("No players found\n\n------------- End Check -------------");
+	});
+}
 
-// function startSystem(message) {
-// 	check(message);
-//   i += 1;
-//   setTimeout(function() {
-//     if (i <= 48) {
-//       startSystem(message);
-//     } else log("\nSystem Alarm Disabled");return message.channel.send("System Alarm Disabled");
-//   }, minute*5);
-// }
+function startSystem(message) {
+	check(message);
+  i += 1;
+  setTimeout(function() {
+    if (i <= 48) {
+      startSystem(message);
+    } else log("\nSystem Alarm Disabled");return message.channel.send("System Alarm Disabled");
+  }, minute*5);
+}
 
-// function forceCheck(message) {
-// 	log("\n------------- Begin Force Check -------------");
-// 	exec("python collect.py", (error, stdout, stderr) => {
-//   	if (error!=null&&error!=undefined&&error!="") log("ERROR: ",error,"\n\n------------- End Force Check -------------");return message.channel.send(error);
-//   	if (stderr!=null&&stderr!=undefined&&stderr!="") log("STD ERROR: ",stderr,"\n\n------------- End Force Check -------------");return message.channel.send(stderr);
-//     log("Successfully executed collect.py");
-//     message.channel.send("Checking...")
-// 	 	let players = require('./players.json');
-// 	 	for (let i = 0; i < players.players.length; i++) {
-// 	 		let px = players.players[i].pos[0]
-// 			let py = players.players[i].pos[1]
-// 			// Inside Bounderies
-// 			if (px>2326.84&&px<2995.71&&py<1625.04&&py>1061.15) {
-// 				if (!whitelist.includes(players.players[i].gamertag)) {
-// 					log(`Player ${players.players[i].gamertag} found in base.`);
-// 					return message.channel.send(`@everyone \`${players.players[i].gamertag}\` is in our base!\n\n------------- End Force Check -------------`);
-// 				}
-// 			}
-// 		}
-// 	  log("No players found")
-// 		return message.channel.send('None\n\n------------- End Force Check -------------');
-// 	});
-// }
+function forceCheck(message) {
+	log("\n------------- Begin Force Check -------------");
+	exec("python collect.py", (error, stdout, stderr) => {
+  	if (error!=null&&error!=undefined&&error!="") log("ERROR: ",error,"\n\n------------- End Force Check -------------");return message.channel.send(error);
+  	if (stderr!=null&&stderr!=undefined&&stderr!="") log("STD ERROR: ",stderr,"\n\n------------- End Force Check -------------");return message.channel.send(stderr);
+    log("Successfully executed collect.py");
+    message.channel.send("Checking...")
+	 	let players = require('./players.json');
+	 	for (let i = 0; i < players.players.length; i++) {
+	 		let px = players.players[i].pos[0]
+			let py = players.players[i].pos[1]
+			// Inside Bounderies
+			if (px>2326.84&&px<2995.71&&py<1625.04&&py>1061.15) {
+				if (!whitelist.includes(players.players[i].gamertag)) {
+					log(`Player ${players.players[i].gamertag} found in base.`);
+					return message.channel.send(`@everyone \`${players.players[i].gamertag}\` is in our base!\n\n------------- End Force Check -------------`);
+				}
+			}
+		}
+	  log("No players found")
+		return message.channel.send('None\n\n------------- End Force Check -------------');
+	});
+}
 
 function calculateVector(pos, lastPos) {
 	let diff = [Math.round(lastPos[0] - pos[0]), Math.round(lastPos[1] - pos[1])];
@@ -280,11 +280,10 @@ client.on('message', async (message) => {
       **${prefix}currentPos** <gamertag> - \`Forces a check for player in base\`
       **${prefix}onlineStatus** <gamertag> - \`Check if player is online\`
 			**${prefix}restartServer** - \`Restarts Server\`      
+      **${prefix}start** - \`Starts system\`
+    	**${prefix}forceCheck** - \`Forces a check for player in base\`
       `,
       inline: false
-      // Deprecated For Now
-     	// **${prefix}start** - \`Starts system\`
-    	// **${prefix}forceCheck** - \`Forces a check for player in base\` 
     })
 
   // Commands
@@ -296,11 +295,7 @@ client.on('message', async (message) => {
   if (command == 'updatelogs') {updateLogs(message);}
   if (command == 'onlinestatus') {onlineStatus(message, args);}
   if (command == 'restartserver') {restartServer(message);}
-
-  /*
-  	Deprecated Commands:
-	  if (command == 'start') { log("\nSystem Alarm Started");message.channel.send("System Alarm Started");startSystem(message);}
-	  if (command == 'forcecheck') {forceCheck(message);}
-	*/
+  if (command == 'start') { log("\nSystem Alarm Started");message.channel.send("System Alarm Started");startSystem(message);}
+  if (command == 'forcecheck') {forceCheck(message);}	
 });
 client.login(process.env.token);
