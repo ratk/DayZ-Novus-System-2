@@ -44,7 +44,7 @@ function startSystem(message) {
   setTimeout(function() {
     if (i <= 48) {
       startSystem(message);
-    } else log("\nSystem Alarm Disabled");return message.channel.send("System Alarm Disabled");
+    } else {log("\nSystem Alarm Disabled");return message.channel.send("System Alarm Disabled");}
   }, minute*5);
 }
 
