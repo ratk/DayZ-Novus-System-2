@@ -4,9 +4,10 @@ const client = new Discord.Client({disableEveryone: false, intents: [Discord.Int
 const dotenv = require('dotenv');
 dotenv.config();
 
-const minute = 60000; //1 minute in milliseconds
+const minute = 60000; // 1 minute in milliseconds
 let t = 0;
-let h = 12; //1 hour in 5 minute increments
+let h = 12; // 1 hour in 5 minute increments
+let n = 8; // Number of hours
 
 const log = function(x){if(DEBUG)console.log(x)};
 
@@ -44,11 +45,11 @@ function startSystem(message) {
 	check(message);
   t += 1;
   setTimeout(function() {
-  	// 8 hour run time
-    if (t <= h*8) {
+  	// Runs for 'n' hours
+    if (t <= h*n) {
       startSystem(message);
     } else {t=0;log("\nSystem Alarm Disabled");return message.channel.send("System Alarm Disabled");}
-  }, minute*5);
+  }, minute*5); // 5 minutes
 }
 
 function forceCheck(message) {
@@ -301,7 +302,7 @@ client.on('message', async (message) => {
   if (command == 'start') { log("\nSystem Alarm Started");message.channel.send("System Alarm Started");startSystem(message);}
   if (command == 'forcecheck') forceCheck(message);
   
-  // Update 't' to 48 will force 'startSystem' func stop itself
-  if (command == 'stop') t = 48;
+  // Update 't' to 'n' hours will force 'startSystem' func stop itself
+  if (command == 'stop') t = h*n;
 });
 client.login(process.env.token);
