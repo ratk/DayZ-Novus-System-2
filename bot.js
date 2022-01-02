@@ -6,6 +6,7 @@ dotenv.config();
 
 const minute = 60000; //1 minute in milliseconds
 let t = 0;
+let h = 12; //1 hour in 5 minute increments
 
 const log = function(x){if(DEBUG)console.log(x)};
 
@@ -43,7 +44,8 @@ function startSystem(message) {
 	check(message);
   t += 1;
   setTimeout(function() {
-    if (t <= 48) {
+  	// 8 hour run time
+    if (t <= h*8) {
       startSystem(message);
     } else {t=0;log("\nSystem Alarm Disabled");return message.channel.send("System Alarm Disabled");}
   }, minute*5);
