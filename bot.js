@@ -303,6 +303,6 @@ client.on('message', async (message) => {
   if (command == 'forcecheck') forceCheck(message);
   
   // Update 't' to 'n' hours will force 'startSystem' func stop itself
-  if (command == 'stop') t = h*n;
+  if (command == 'stop') {t=h*n;return message.channel.send('Stopping...');}
 });
 client.login(process.env.token);
