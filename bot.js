@@ -106,19 +106,26 @@ function playerList(message) {
 
 		let online = new Discord.MessageEmbed()
     	.setColor('#ed3e24')
-    	.setTitle('**__Players:__**')
+    	.setTitle('**__Online Players:__**')
+    	.setAuthor('McDazzzled', 'https://avatars.githubusercontent.com/u/48144618?v=4', 'https://github.com/SowinskiBraeden')
+
+    let offline = new Discord.MessageEmbed()
+    	.setColor('#ed3e24')
+    	.setTitle('**__Offlines Players__**')
     	.setAuthor('McDazzzled', 'https://avatars.githubusercontent.com/u/48144618?v=4', 'https://github.com/SowinskiBraeden')
 
     if (players.players.length==0) {log("No players in logs\n\n------------- End Collect Player List -------------");return message.channel.send("No players in logs");}
 		for (let i = 0; i < players.players.length; i++) {
 			if (players.players[i].connectionStatus=="Online") {
-				onlinePlayers.push(players.players[i].gamertag);
+				if (DEBUG) onlinePlayers.push(players.players[i].gamertag);
+				online.addFields({ name: `**${players.players[i].gamertag}** is:`, value: `\`${players.players[i].connectionStatus}\``, inline: false });
 			} else {
-				offlinePlayers.push(players.players[i].gamertag);
+				if (DEBUG) offlinePlayers.push(players.players[i].gamertag);
+				offline.addFields({ name: `**${players.players[i].gamertag}** is:`, value: `\`${players.players[i].connectionStatus}\``, inline: false });
 			}
-			online.addFields({ name: `**${players.players[i].gamertag}** is:`, value: `\`${players.players[i].connectionStatus}\``, inline: false });
 		}
-		log("Online:",onlinePlayers,"\nOffline:",offlinePlayers,`\n\n------------- End Collect Player List -------------`);
+		log(`Online: ${onlinePlayers}\nOffline: ${offlinePlayers}\n\n------------- End Collect Player List -------------`);
+		message.channel.send(offline);
 		return message.channel.send(online);
 	});
 }
