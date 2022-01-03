@@ -284,7 +284,9 @@ client.on('message', async (message) => {
       **${prefix}currentPos** <gamertag> - \`Forces a check for player in base\`
       **${prefix}onlineStatus** <gamertag> - \`Check if player is online\`
 			**${prefix}restartServer** - \`Restarts Server\`      
-      **${prefix}start** - \`Starts system\`
+      **${prefix}start** - \`Starts alarm system\`
+      **${prefix}stop** - \`Stops alarm system\`
+      **${prefix}restart** - \`Restarts alarm system\`
     	**${prefix}forceCheck** - \`Forces a check for player in base\`
       `,
       inline: false
@@ -299,10 +301,19 @@ client.on('message', async (message) => {
   if (command == 'updatelogs') updateLogs(message);
   if (command == 'onlinestatus') onlineStatus(message, args);
   if (command == 'restartserver') restartServer(message);
-  if (command == 'start') { log("\nSystem Alarm Started");message.channel.send("System Alarm Started");startSystem(message);}
   if (command == 'forcecheck') forceCheck(message);
-  
+
+  if (command == 'start') {
+  	if (t>0) return message.channel.send("System Alarm is already active, use \`?restart\ to restart the alarm.`");	
+  	log("\nSystem Alarm Started");
+  	message.channel.send("System Alarm Started");
+  	startSystem(message);
+  }
+
   // Update 't' to 'n' hours will force 'startSystem' func stop itself
   if (command == 'stop') {t=h*n;return message.channel.send('Stopping... This may take a couple minutes');}
+
+  // Update 't' back to 0 making 'startSystem' func 'restart'
+  if (command == 'restart') {t=0;return message.channel.send('Restarting alarm system...');}
 });
 client.login(process.env.token);
