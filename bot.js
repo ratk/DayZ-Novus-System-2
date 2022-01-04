@@ -25,6 +25,8 @@ function check(message) {
     log("Successfully executed collect.py");
     // Check Data
 		let players = require('./players.json');
+		delete require.cache[require.resolve("./players.json")];
+		players = require("./players.json");
 		let px, py;
 		for (let i = 0; i < players.players.length; i++) {
 			px = players.players[i].pos[0];
@@ -60,6 +62,8 @@ function forceCheck(message) {
     log("Successfully executed collect.py");
     message.channel.send("Checking...")
 	 	let players = require('./players.json');
+		delete require.cache[require.resolve("./players.json")];
+		players = require("./players.json");
 	 	let px, py;
 	 	for (let i = 0; i < players.players.length; i++) {
 	 		px = players.players[i].pos[0]
@@ -102,6 +106,8 @@ function playerList(message) {
     if (stderr!=null&&stderr!=undefined&&stderr!="") {log("STD ERROR: ",stderr,"\n\n------------- End Collect Player List -------------");return message.channel.send(stderr);}
     log("Successfully executed collect.py");
 		let players = require('./players.json');
+		delete require.cache[require.resolve("./players.json")];
+		players = require("./players.json");
 		let onlinePlayers = [];
 		let offlinePlayers = [];
 
@@ -139,6 +145,8 @@ function currentPos(message, args) {
     if (stderr!=null&&stderr!=undefined&&stderr!="") {log("STD ERROR: ",stderr,"\n\n------------- End Current Player Pos -------------");return message.channel.send(stderr);}
     log("Successfully executed collect.py");		
 		let players = require('./players.json');
+		delete require.cache[require.resolve("./players.json")];
+		players = require("./players.json");
 		let gamertag = getGamertag(args);
 		let pos, lastPos;
 		for (let i = 0; i < players.players.length; i++) {
@@ -179,6 +187,8 @@ function checkPosHistory(message, args) {
     if (stderr!=null&&stderr!=undefined&&stderr!="") {log("STD ERROR: ",stderr,"\n\n------------- End Player Pos History -------------");return message.channel.send(stderr);}
     log("Successfully executed collect.py");	
 		let players = require('./players.json');
+		delete require.cache[require.resolve("./players.json")];
+		players = require("./players.json");
 		let gamertag = getGamertag(args);
 		let pos, lastPos;
 		let playerHistory;
@@ -244,6 +254,8 @@ function onlineStatus(message, args) {
     if (stderr!=null&&stderr!=undefined&&stderr!="") {log("STD ERROR: ",stderr,"\n\n------------- End Check Player Connection Status -------------");return message.channel.send(stderr);}
     log("Successfully executed collect.py");	
 		let players = require('./players.json');
+		delete require.cache[require.resolve("./players.json")];
+		players = require("./players.json");
 		let gamertag = getGamertag(args);
 		for (let i = 0; i < players.players.length; i++) {
 			if (players.players[i].gamertag==gamertag) {
