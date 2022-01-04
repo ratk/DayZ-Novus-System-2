@@ -5,15 +5,15 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const minute = 60000; // 1 minute in milliseconds
-let t = 0;
-let h = 12; // 1 hour in 5 minute increments
+let tick = 0;
+let hour = 12; // 1 hour in 5 minute increments
 let n = 8; // Number of hours
 
 const log = function(x){if(DEBUG)console.log(x)};
 
 const whitelist = require('./whitelist.json').players;
 let DEBUG = (process.env.DEBUG=="true");
-log(`Debug mode: ${DEBUG}`);
+console.log(`Debug mode: ${DEBUG}`);
 
 const getGamertag = function(t){let n;if(1<t.length)for(let e=0;e<t.length;e++)e+1==t.length?n+=t[e]:n=n+t[e]+" ";else n=t[0];return n};
 
@@ -25,13 +25,13 @@ function check(message) {
     log("Successfully executed collect.py");
     // Check Data
 		let players = require('./players.json');
+		let px, py;
 		for (let i = 0; i < players.players.length; i++) {
-			let px = players.players[i].pos[0];
-			let py = players.players[i].pos[1];
+			px = players.players[i].pos[0];
+			py = players.players[i].pos[1];
 			// Inside Bounderies
 			if (px>2326.84&&px<2995.71&&py<1625.04&&py>1061.15) {
 				if (!whitelist.includes(players.players[i].gamertag)) {
-					t = 0;
 					log(`Player ${players.players[i].gamertag} found in base.\n\n------------- End Check -------------`);
 					return message.channel.send(`@everyone \`${players.players[i].gamertag}\` is in our base!`);
 				}
@@ -43,12 +43,12 @@ function check(message) {
 
 function startSystem(message) {
 	check(message);
-  t += 1;
+  tick += 1;
   setTimeout(function() {
   	// Runs for 'n' hours
-    if (t <= h*n) {
+    if (tick <= hour*n) {
       startSystem(message);
-    } else {t=0;log("\nSystem Alarm Disabled");return message.channel.send("System Alarm Disabled");}
+    } else {tick=0;log("\nSystem Alarm Disabled");return message.channel.send("System Alarm Disabled");}
   }, minute*5); // 5 minutes
 }
 
@@ -60,9 +60,10 @@ function forceCheck(message) {
     log("Successfully executed collect.py");
     message.channel.send("Checking...")
 	 	let players = require('./players.json');
+	 	let px, py;
 	 	for (let i = 0; i < players.players.length; i++) {
-	 		let px = players.players[i].pos[0]
-			let py = players.players[i].pos[1]
+	 		px = players.players[i].pos[0]
+			py = players.players[i].pos[1]
 			// Inside Bounderies
 			if (px>2326.84&&px<2995.71&&py<1625.04&&py>1061.15) {
 				if (!whitelist.includes(players.players[i].gamertag)) {
@@ -139,13 +140,14 @@ function currentPos(message, args) {
     log("Successfully executed collect.py");		
 		let players = require('./players.json');
 		let gamertag = getGamertag(args);
+		let pos, lastPos;
 		for (let i = 0; i < players.players.length; i++) {
 			if (players.players[i].gamertag==gamertag) {
 				if (players.players[i].time==null) {log(`Player \`${gamertag}\` has no position data.`);return message.channel.send(`Player \`${gamertag}\` has no position data.`);}
-				let pos = players.players[i].pos;
+				pos = players.players[i].pos;
 				message.channel.send("Calculating...")
 				if (players.players[i].posHistory.length>0) {
-					let lastPos = players.players[i].posHistory[players.players[i].posHistory.length-1].pos
+					lastPos = players.players[i].posHistory[players.players[i].posHistory.length-1].pos
 					let {distance, theta, dir} = calculateVector(pos, lastPos);
 					
 					log(`**__${gamertag}'s current positional data:__**`)
@@ -178,12 +180,14 @@ function checkPosHistory(message, args) {
     log("Successfully executed collect.py");	
 		let players = require('./players.json');
 		let gamertag = getGamertag(args);
+		let pos, lastPos;
+		let playerHistory;
 		for (let i = 0; i < players.players.length; i++) {
 			if (players.players[i].gamertag==gamertag) {
 				if (players.players[i].time==null) {log(`Player \`${gamertag}\` has no position data.`);return message.channel.send(`Player \`${gamertag}\` has no position data.`);}
 				log(`**__${gamertag}'s positional history:__**`);
 				log(`**Latest Positions:** \`${players.players[i].pos[0]} / ${players.players[i].pos[1]}\`  at  **Latest Time:** \`${players.players[i].time}\``);
-				let playerHistory = [];
+				playerHistory = [];
 				message.channel.send(`**__${gamertag}'s positional history:__**`)
 				message.channel.send(`**Latest Positions:** \`${players.players[i].pos[0]} / ${players.players[i].pos[1]}\`  at  **Latest Time:** \`${players.players[i].time}\``);	
 				message.channel.send(`Collecting Position History...`);
@@ -193,9 +197,9 @@ function checkPosHistory(message, args) {
 				}
 				message.channel.send(playerHistory);
 				message.channel.send("Calculating...");
-				let pos = players.players[i].pos;
+				pos = players.players[i].pos;
 				if (players.players[i].posHistory.length>0) {
-					let lastPos = players.players[i].posHistory[players.players[i].posHistory.length-1].pos
+					lastPos = players.players[i].posHistory[players.players[i].posHistory.length-1].pos
 					let {distance, theta, dir} = calculateVector(pos, lastPos);
 					
 					log(`**__${gamertag}'s current positional data:__**`);
@@ -264,7 +268,7 @@ function restartServer(message) {
 }
 
 client.on('ready', () => {
-  log(`Logged in as ${client.user.tag}`);
+  console.log(`Logged in as ${client.user.tag}`);
 });
 
 // Basic Commands
@@ -311,16 +315,17 @@ client.on('message', async (message) => {
   if (command == 'forcecheck') forceCheck(message);
 
   if (command == 'start') {
-  	if (t>0) return message.channel.send("System Alarm is already active, use \`?restart\ to restart the alarm.`");	
+  	if (tick>0) return message.channel.send("System Alarm is already active, use \`?restart\ to restart the alarm.`");	
+  	tick = 0;
   	log("\nSystem Alarm Started");
   	message.channel.send("System Alarm Started");
   	startSystem(message);
   }
 
   // Update 't' to 'n' hours will force 'startSystem' func stop itself
-  if (command == 'stop') {t=h*n;return message.channel.send('Stopping... This may take a couple minutes');}
+  if (command == 'stop') {tick=hour*n;return message.channel.send('Stopping... This may take a couple minutes');}
 
   // Update 't' back to 0 making 'startSystem' func 'restart'
-  if (command == 'restart') {t=0;return message.channel.send('Restarting alarm system...');}
+  if (command == 'restart') {tick=0;return message.channel.send('Restarting alarm system...');}
 });
 client.login(process.env.token);
