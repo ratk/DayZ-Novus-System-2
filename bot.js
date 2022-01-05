@@ -34,6 +34,8 @@ function check(message) {
 			// Inside Bounderies
 			if (px>2326.84&&px<2995.71&&py<1625.04&&py>1061.15) {
 				if (!whitelist.includes(players.players[i].gamertag)) {
+					tick = hour*n;
+					tick++;
 					log(`Player ${players.players[i].gamertag} found in base.\n\n------------- End Check -------------`);
 					return message.channel.send(`@everyone \`${players.players[i].gamertag}\` is in our base!`);
 				}
@@ -45,7 +47,7 @@ function check(message) {
 
 function startSystem(message) {
 	check(message);
-  tick += 1;
+  tick++;
   setTimeout(function() {
   	// Runs for 'n' hours
     if (tick <= hour*n) {
@@ -71,13 +73,13 @@ function forceCheck(message) {
 			// Inside Bounderies
 			if (px>2326.84&&px<2995.71&&py<1625.04&&py>1061.15) {
 				if (!whitelist.includes(players.players[i].gamertag)) {
-					log(`Player ${players.players[i].gamertag} found in base.`);
-					return message.channel.send(`@everyone \`${players.players[i].gamertag}\` is in our base!\n\n------------- End Force Check -------------`);
+					log(`Player ${players.players[i].gamertag} found in base.\n\n------------- End Force Check -------------`);
+					return message.channel.send(`@everyone \`${players.players[i].gamertag}\` is in our base!`);
 				}
 			}
 		}
-	  log("No players found")
-		return message.channel.send('None\n\n------------- End Force Check -------------');
+	  log("No players found\n\n------------- End Force Check -------------")
+		return message.channel.send('None');
 	});
 }
 
@@ -327,7 +329,7 @@ client.on('message', async (message) => {
   if (command == 'forcecheck') forceCheck(message);
 
   if (command == 'start') {
-  	if (tick>0) return message.channel.send("System Alarm is already active, use \`?restart\ to restart the alarm.`");	
+  	if (tick>0) return message.channel.send("System Alarm is already active, use \`?restart\` to restart the alarm.`");	
   	tick = 0;
   	log("\nSystem Alarm Started");
   	message.channel.send("System Alarm Started");
@@ -335,7 +337,7 @@ client.on('message', async (message) => {
   }
 
   // Update 't' to 'n' hours will force 'startSystem' func stop itself
-  if (command == 'stop') {tick=hour*n;return message.channel.send('Stopping... This may take a couple minutes');}
+  if (command == 'stop') {tick=hour*n;tick++;return message.channel.send('Stopping... This may take a couple minutes');}
 
   // Update 't' back to 0 making 'startSystem' func 'restart'
   if (command == 'restart') {tick=0;return message.channel.send('Restarting alarm system...');}
