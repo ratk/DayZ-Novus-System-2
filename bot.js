@@ -159,7 +159,7 @@ function currentPos(message, args) {
 				if (players.players[i].posHistory.length>0) {
 					lastPos = players.players[i].posHistory[players.players[i].posHistory.length-1].pos
 					let {distance, theta, dir} = calculateVector(pos, lastPos);
-					
+
 					log(`**__${gamertag}'s current positional data:__**`)
 					log(`**${gamertag}** has moved **__${distance}m @${theta}° ${dir}__**`)
 					log(`**From Last Position:** ${lastPos[0]} / ${lastPos[1]}  at  **Last Time:** ${players.players[i].posHistory[players.players[i].posHistory.length-1].time}`)
@@ -313,6 +313,7 @@ client.on('message', async (message) => {
       **${prefix}stop** - \`Stops alarm system\`
       **${prefix}restart** - \`Restarts alarm system\`
     	**${prefix}forceCheck** - \`Forces a check for player in base\`
+    	**${prefix}isActive** - \`Returns if alarm is active\`
       `,
       inline: false
     })
@@ -327,6 +328,12 @@ client.on('message', async (message) => {
   if (command == 'onlinestatus') onlineStatus(message, args);
   if (command == 'restartserver') restartServer(message);
   if (command == 'forcecheck') forceCheck(message);
+  
+
+  if (command == 'isactive') {
+  	if (tick>0) return message.channel.send("System Alarm is active, use \`?restart\` to restart the alarm.`");
+  	return message.channel.send("System Alarm is not active, use \`?start\` to start the alarm.`");	
+  }
 
   if (command == 'start') {
   	if (tick>0) return message.channel.send("System Alarm is already active, use \`?restart\` to restart the alarm.`");	
@@ -336,10 +343,10 @@ client.on('message', async (message) => {
   	startSystem(message);
   }
 
-  // Update 't' to 'n' hours will force 'startSystem' func stop itself
+  // Update 'tick' to 'n' hours will force 'startSystem' func stop itself
   if (command == 'stop') {tick=hour*n;tick++;return message.channel.send('Stopping... This may take a couple minutes');}
 
-  // Update 't' back to 0 making 'startSystem' func 'restart'
+  // Update 'tick' back to 0 making 'startSystem' func 'restart'
   if (command == 'restart') {tick=0;return message.channel.send('Restarting alarm system...');}
 });
 client.login(process.env.token);
