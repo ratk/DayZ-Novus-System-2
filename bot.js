@@ -17,6 +17,8 @@ console.log(`Debug mode: ${DEBUG}`);
 
 const getGamertag = function(t){let n;if(1<t.length)for(let e=0;e<t.length;e++)e+1==t.length?n+=t[e]:n=n+t[e]+" ";else n=t[0];return n};
 
+const calculateTime = function() {let r=Math.floor((hour*n-tick)/hour);let m=((hour*n-tick)%hour)*5;return{r,m};}
+
 function check(message) {
   log("\n------------- Begin Check -------------")
 	exec("python collect.py", (error, stdout, stderr) => {
@@ -329,14 +331,16 @@ client.on('message', async (message) => {
   if (command == 'restartserver') restartServer(message);
   if (command == 'forcecheck') forceCheck(message);
   
-
   if (command == 'isactive') {
-  	if (tick>0) return message.channel.send("System Alarm is active, use \`?restart\` to restart the alarm.`");
-  	return message.channel.send("System Alarm is not active, use \`?start\` to start the alarm.`");	
+  	if (tick > 0) {
+  		message.channel.send(`The alarm is active, and will be active for \`${calculateTime().r}h ${calculateTime().m}m\`...`)
+  		return message.channel.send("use \`?restart\` to restart the alarm.");
+  	}
+  	return message.channel.send("System Alarm is not active, use \`?start\` to start the alarm.");	
   }
 
   if (command == 'start') {
-  	if (tick>0) return message.channel.send("System Alarm is already active, use \`?restart\` to restart the alarm.`");	
+  	if (tick>0) return message.channel.send("System Alarm is already active, use \`?restart\` to restart the alarm.");	
   	tick = 0;
   	log("\nSystem Alarm Started");
   	message.channel.send("System Alarm Started");
