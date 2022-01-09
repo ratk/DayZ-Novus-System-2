@@ -351,6 +351,10 @@ client.on('message', async (message) => {
   if (command == 'stop') {tick=hour*n;tick++;return message.channel.send('Stopping... This may take a couple minutes');}
 
   // Update 'tick' back to 0 making 'startSystem' func 'restart'
-  if (command == 'restart') {tick=0;return message.channel.send('Restarting alarm system...');}
+  if (command == 'restart') {
+  	if (tick==0) return message.channel.send("System Alarm is not active, use \`?start\` to start the alarm.");
+  	tick=0;
+  	return message.channel.send('Restarting alarm system...');
+  }
 });
 client.login(process.env.token);
