@@ -36,7 +36,6 @@ players = {
   'players': []
 }
 
-
 # Download Raw Logs off Nitrado
 def getRawLogs():
   data = requests.get(
