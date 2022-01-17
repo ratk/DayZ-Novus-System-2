@@ -15,7 +15,7 @@ const whitelist = require('./whitelist.json').players;
 let DEBUG = (process.env.DEBUG=="true");
 console.log(`Debug mode: ${DEBUG}`);
 
-const getGamertag = function(t){let n;if(1<t.length)for(let e=0;e<t.length;e++)e+1==t.length?n+=t[e]:n=n+t[e]+" ";else n=t[0];return n};
+const getGamertag = function(t){let n="";if(1<t.length)for(let e=0;e<t.length;e++)e+1==t.length?n+=t[e]:n=n+t[e]+" ";else n=t[0];return n};
 
 const calculateTime = function() {let r=Math.floor((hour*n-tick)/hour);let m=((hour*n-tick)%hour)*5;return{r,m};}
 
