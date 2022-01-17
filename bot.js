@@ -9,6 +9,8 @@ let tick = 0;
 let hour = 12; // 1 hour in 5 minute increments
 let n = 8; // Number of hours
 
+let coords = {x1: 2365.73, y1: 2096.45, x2: 3345.70,  y2: 1162.56}
+
 const log = function(x){if(DEBUG)console.log(x)};
 
 const whitelist = require('./whitelist.json').players;
@@ -34,7 +36,7 @@ function check(message) {
 			px = players.players[i].pos[0];
 			py = players.players[i].pos[1];
 			// Inside Bounderies
-			if (px>2326.84&&px<2995.71&&py<1625.04&&py>1061.15) {
+			if (px>coords.x1&&px<coords.x2&&py<coords.y1&&py>coords.y2) {
 				if (!whitelist.includes(players.players[i].gamertag)) {
 					tick = hour*n;
 					tick++;
