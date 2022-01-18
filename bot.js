@@ -59,11 +59,9 @@ function startSystem(message) {
 }
 
 function forceCheck(message) {
-	log("\n------------- Begin Force Check -------------");
 	exec("python collect.py", (error, stdout, stderr) => {
   	if (error!=null&&error!=undefined&&error!="") return message.channel.send(error);
     if (stderr!=null&&stderr!=undefined&&stderr!="") return message.channel.send(stderr);
-    log("Successfully executed collect.py");
     message.channel.send("Checking...")
 	 	let players = require('./players.json');
 		delete require.cache[require.resolve("./players.json")];
