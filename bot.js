@@ -10,14 +10,14 @@ let config = require(configFile);
 
 let whitelist = config.whitelist;
 let boundaries = config.boundaries;
+let n = config.runtime; // Amount of hours to run radar
 
 const minute = 60000; // 1 minute in milliseconds
 const hour = 12; // 1 hour in 5 minute increments
 let tick = 0;
-let n = config.runtime; // Amount of hours to run radar
 
 // Config variables manipulation
-const refreshConfig = function() {delete require.cache[require.resolve(configFile)];config=require(configFile);whitelist=config.whitelist;};
+const refreshConfig = function() {delete require.cache[require.resolve(configFile)];config=require(configFile);whitelist=config.whitelist;n=config.runtime;boundaries=config.boundaries;};
 const updateConfig = function() {fs.writeFileSync(configFile,JSON.stringify(config,null,2));refreshConfig();};
 
 const getGamertag = function(t){let n="";if(1<t.length)for(let e=0;e<t.length;e++)e+1==t.length?n+=t[e]:n=n+t[e]+" ";else n=t[0];return n};
@@ -275,8 +275,7 @@ function updateRuntime(message, args) {
 	if (args.length==0) return message.channel.send(`You need to provide a runtime number in hours`);
 	if (parseInt(args[0])>24) return message.channel.send('The runtime for the alarm can not be longer than 24 hours');
 	config.runtime = parseInt(args[0]);
-	tick = hour*n; // Update tick to stop alarm, before changing runtime.
-	tick++;
+	if (tick>0) {tick=hour*n;tick++;} // If alarm is active, Update tick to stop alarm, before changing runtime.
 	message.channel.send('Stopping Alarm... This may take a couple minutes');
 	updateConfig();
 	return message.channel.send(`Alarm runtime is now set to ${args[0]}h`);
@@ -375,7 +374,7 @@ client.on('message', async (message) => {
   if (command == 'updateradar' || command == 'update') updateRadar(message, args);
   if (command == 'whitelistadd' || command == 'wladd') addWhitelist(message, args);
   if (command == 'whitelistremove' || command == 'wlremove') removeWhitelist(message, args); 
-  if (command == 'updateRuntime' || command == 'updatert') updateRuntime(message, args);
+  if (command == 'updateruntime' || command == 'updatert') updateRuntime(message, args);
   if (command == 'runtime' || command == 'rt') return message.channel.send(`The current runtime for the base alarm is \` ${n}h \``)
 
   if (command == 'isactive' || command == 'active' || command == 'time' || command == 'timer') {
@@ -394,7 +393,11 @@ client.on('message', async (message) => {
   }
 
   // Update 'tick' to 'n' hours will force 'startSystem' func stop itself
-  if (command == 'stop') {tick=hour*n;tick++;return message.channel.send('Stopping... This may take a couple minutes');}
+  if (command == 'stop') {
+  	if (tick==0) return message.channel.send('The system is not active');
+  	tick=hour*n;tick++;
+  	return message.channel.send('Stopping... This may take a couple minutes');
+  }
 
   // Update 'tick' back to 0 making 'startSystem' func 'restart'
   if (command == 'restart' || command == 'rsalarm') {
