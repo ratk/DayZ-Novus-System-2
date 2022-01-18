@@ -301,19 +301,31 @@ client.on('message', async (message) => {
     .setAuthor('McDazzzled', 'https://avatars.githubusercontent.com/u/48144618?v=4', 'https://github.com/SowinskiBraeden')
     .setDescription('Novus Security Commmand')
     .addFields({
-      name: `**__Bot Commands:__**`,
+      name: `**__General Commands:__**`,
       value: `
       **${prefix}shortcuts** - \`View supported command shortcuts\`
       **${prefix}help** - \`Displays this help page\`
       **${prefix}ping** - \`Responds with Pong to check Bot responce\`
+			**${prefix}restartServer** - \`Restarts Server\`
+    	**${prefix}runtime** - \`Returns the max runtime for the alarm radar\`
+      `,
+      inline: false
+    }, {
+    	name: `**__Tracking Commands:__**`,
+      value: `
+      **${prefix}onlineStatus** <gamertag> - \`Check if player is online\`
       **${prefix}playerList** - \`Shows current players\`
       **${prefix}playerHistory** <gamertag> - \`Check specific player history\`
       **${prefix}currentPos** <gamertag> - \`Forces a check for player in base\`
-      **${prefix}onlineStatus** <gamertag> - \`Check if player is online\`
-			**${prefix}restartServer** - \`Restarts Server\`      
+    	**${prefix}forceCheck** - \`Forces a check for player in base\`
+      `,
+      inline: false
+    }, {
+    	name: `**__Alarm Radar Commands:__**`,
+    	value: `
       **${prefix}start** - \`Starts alarm system\`
       **${prefix}stop** - \`Stops alarm system\`
-      **${prefix}restart** - \`Restarts alarm system\`
+      **${prefix}restart** - \`Restarts alarm system\`\
     	**${prefix}forceCheck** - \`Forces a check for player in base\`
     	**${prefix}isActive** - \`Returns if alarm is active\`
     	**${prefix}updateRadar** <x1, y1, x2, y2> - \`Changes the boundaries for the alarm radar\`
@@ -321,8 +333,7 @@ client.on('message', async (message) => {
     	**${prefix}removeWhitelist** <gamertag> - \`Removes player to whitelist for the alarm radar\`
     	**${prefix}updateRuntime** <hours> - \`Updates Max runtime (no more than 24h)\`
     	**${prefix}runtime** - \`Returns the max runtime for the alarm radar\`
-      `,
-      inline: false
+    	`
     })
 
   const shortcuts = new Discord.MessageEmbed()
