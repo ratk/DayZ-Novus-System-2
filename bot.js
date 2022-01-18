@@ -322,6 +322,7 @@ client.on('message', async (message) => {
     	**${prefix}updateRadar** <x1, y1, x2, y2> - \`Changes the boundaries for the alarm radar\`
     	**${prefix}addWhitelist** <gamertag> - \`Adds player to whitelist for the alarm radar\`
     	**${prefix}removeWhitelist** <gamertag> - \`Removes player to whitelist for the alarm radar\`
+    	**${prefix}updateRuntime** <hours> - \`Updates Max runtime (no more than 24h)\`
     	**${prefix}runtime** - \`Returns the max runtime for the alarm radar\`
       `,
       inline: false
@@ -340,6 +341,7 @@ client.on('message', async (message) => {
   if (command == 'updateradar' || command == 'update') updateRadar(message, args);
   if (command == 'whitelistadd' || command == 'wladd') addWhitelist(message, args);
   if (command == 'whitelistremove' || command == 'wlremove') removeWhitelist(message, args); 
+  if (command == 'updateRuntime' || command == 'updatert') updateRuntime(message, args);
   if (command == 'runtime' || command == 'rt') return message.channel.send(`The current runtime for the base alarm is \` ${runtime}h \``)
 
   if (command == 'isactive' || command == 'active' || command == 'time' || command == 'timer') {
