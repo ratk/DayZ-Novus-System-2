@@ -376,7 +376,7 @@ client.on('message', async (message) => {
   if (command == 'whitelistadd' || command == 'wladd') addWhitelist(message, args);
   if (command == 'whitelistremove' || command == 'wlremove') removeWhitelist(message, args); 
   if (command == 'updateRuntime' || command == 'updatert') updateRuntime(message, args);
-  if (command == 'runtime' || command == 'rt') return message.channel.send(`The current runtime for the base alarm is \` ${runtime}h \``)
+  if (command == 'runtime' || command == 'rt') return message.channel.send(`The current runtime for the base alarm is \` ${n}h \``)
 
   if (command == 'isactive' || command == 'active' || command == 'time' || command == 'timer') {
   	if (tick > 0) {
