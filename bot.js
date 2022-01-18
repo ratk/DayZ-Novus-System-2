@@ -307,6 +307,7 @@ client.on('message', async (message) => {
     .addFields({
       name: `**__Bot Commands:__**`,
       value: `
+      **${prefix}shortcuts** - \`View supported command shortcuts\`
       **${prefix}help** - \`Displays this help page\`
       **${prefix}ping** - \`Responds with Pong to check Bot responce\`
       **${prefix}playerList** - \`Shows current players\`
@@ -328,16 +329,42 @@ client.on('message', async (message) => {
       inline: false
     })
 
+  const shortcuts = new Discord.MessageEmbed()
+    .setColor('#ed3e24')
+    .setTitle('**Command Shortcuts:**')
+    .setAuthor('McDazzzled', 'https://avatars.githubusercontent.com/u/48144618?v=4', 'https://github.com/SowinskiBraeden')
+    .setDescription('Novus Security Commmand')
+    .addFields({
+      name: `**__Command Shortcuts:__**`,
+      value: `
+      **${prefix}playerList** - \`?pl\`
+      **${prefix}playerHistory** - \`?history\` or \`?ph\`
+      **${prefix}currentPos** - \`?pos\`
+      **${prefix}onlineStatus** - \`?online\`
+			**${prefix}restartServer** - \`?rsServer\`
+      **${prefix}restart** - \`?rsAlarm\`
+    	**${prefix}forceCheck** - \`?check\`
+    	**${prefix}isActive** - \`?active\` or \`?timer\` or \`?time\`
+    	**${prefix}updateRadar** - \`?update\`
+    	**${prefix}addWhitelist** - \`?wlAdd\`
+    	**${prefix}removeWhitelist** - \`?wlRemove\`
+    	**${prefix}updateRuntime** - \`?updateRt\`
+    	**${prefix}runtime** - \`?rt\`
+      `,
+      inline: false
+    })
+
   // Commands
+  if (command == 'shortcuts') return message.channel.send(shortcuts);
   if (command == 'ping') {log("\nPing\n");return message.channel.send('Pong!');}
   if (command == 'help') return message.channel.send(help);
   if (command == 'playerlist' || command == 'pl') playerList(message);
-  if (command == 'playerhistory' || command == 'history') checkPosHistory(message, args);
+  if (command == 'playerhistory' || command == 'history' || command == 'ph') checkPosHistory(message, args);
   if (command == 'currentpos' || command == 'pos') currentPos(message, args);
   if (command == 'updatelogs' || command == 'update') updateLogs(message);
   if (command == 'onlinestatus' || command == 'online') onlineStatus(message, args);
   if (command == 'restartserver' || command == 'rsserver') restartServer(message);
-  if (command == 'forcecheck' || command == 'force') forceCheck(message);
+  if (command == 'forcecheck' || command == 'check') forceCheck(message);
   if (command == 'updateradar' || command == 'update') updateRadar(message, args);
   if (command == 'whitelistadd' || command == 'wladd') addWhitelist(message, args);
   if (command == 'whitelistremove' || command == 'wlremove') removeWhitelist(message, args); 
@@ -364,7 +391,7 @@ client.on('message', async (message) => {
   if (command == 'stop') {tick=hour*n;tick++;return message.channel.send('Stopping... This may take a couple minutes');}
 
   // Update 'tick' back to 0 making 'startSystem' func 'restart'
-  if (command == 'restart') {
+  if (command == 'restart' || command == 'rsalarm') {
   	if (tick==0) return message.channel.send("System Alarm is not active, use \`?start\` to start the alarm.");
   	tick=0;
   	return message.channel.send('Restarting alarm system...');
