@@ -319,6 +319,10 @@ client.on('message', async (message) => {
       **${prefix}restart** - \`Restarts alarm system\`
     	**${prefix}forceCheck** - \`Forces a check for player in base\`
     	**${prefix}isActive** - \`Returns if alarm is active\`
+    	**${prefix}updateRadar** <x1, y1, x2, y2> - \`Changes the boundaries for the alarm radar\`
+    	**${prefix}addWhitelist** <gamertag> - \`Adds player to whitelist for the alarm radar\`
+    	**${prefix}removeWhitelist** <gamertag> - \`Removes player to whitelist for the alarm radar\`
+    	**${prefix}runtime** - \`Returns the max runtime for the alarm radar\`
       `,
       inline: false
     })
