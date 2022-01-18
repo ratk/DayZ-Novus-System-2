@@ -352,7 +352,7 @@ client.on('message', async (message) => {
 
   // Commands
   if (command == 'shortcuts') return message.channel.send(shortcuts);
-  if (command == 'ping') {log("\nPing\n");return message.channel.send('Pong!');}
+  if (command == 'ping') return message.channel.send('Pong!');
   if (command == 'help') return message.channel.send(help);
   if (command == 'playerlist' || command == 'pl') playerList(message);
   if (command == 'playerhistory' || command == 'history' || command == 'ph') checkPosHistory(message, args);
@@ -378,7 +378,6 @@ client.on('message', async (message) => {
   if (command == 'start') {
   	if (tick>0) return message.channel.send("System Alarm is already active, use \`?restart\` to restart the alarm.");	
   	tick = 0;
-  	log("\nSystem Alarm Started");
   	message.channel.send("System Alarm Started");
   	startSystem(message);
   }
