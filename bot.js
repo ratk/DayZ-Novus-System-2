@@ -280,7 +280,8 @@ function updateRuntime(message, args) {
 	if (args.length==0) return message.channel.send(`You need to provide a runtime number in hours`);
 	if (parseInt(args[0])>24) return message.channel.send('The runtime for the alarm can not be longer than 24 hours');
 	config.runtime = parseInt(args[0]);
-	tick = (hour*n)++; // Update tick to stop alarm, before changing runtime.
+	tick = hour*n; // Update tick to stop alarm, before changing runtime.
+	tick++;
 	message.channel.send('Stopping Alarm... This may take a couple minutes');
 	updateConfig();
 	return message.channel.send(`Alarm runtime is now set to ${args[0]}h`);
