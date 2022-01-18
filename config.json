@@ -1,20 +1,24 @@
 {
-	"players": [
+	"whitelist": [
 		"McDazzzled",
 		"Brandon24254",
 		"A 356ft Giraffe",
 		"Toxic7077",
 		"III8 Luigi 8III",
-		"lll8 Luigi 8lll",
 		"XxGhost314xX",
 		"AmusingSquash93",
-		"xXAxeManHDXx",
 		"XxXSumRandomGuy",
 		"Mightymouse2868",
 		"ReaperACT",
 		"EMS x INDRA",
 		"Enragedcross99",
-		"MADDHATTER1775",
-		"IiI Coke"
-	]
+		"MADDHATTER1775"
+	],
+	"boundaries": {
+		"x1": 2365.73,
+		"y1": 2096.45,
+		"x2": 3345.70, 
+		"y2": 1162.56
+	},
+	"runtime": 8
 }

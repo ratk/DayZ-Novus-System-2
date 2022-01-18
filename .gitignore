@@ -8,6 +8,7 @@ node_modules/*
 
 # Test
 test.js
+test-config.json
 
 # Environment
 .env

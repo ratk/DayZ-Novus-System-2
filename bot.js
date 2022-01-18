@@ -2,31 +2,34 @@ const { exec } = require('child_process');
 const Discord = require('discord.js');
 const client = new Discord.Client({disableEveryone: false, intents: [Discord.Intents.FLAGS.GUILDS, Discord.Intents.FLAGS.GUILD_MESSAGES]});
 const dotenv = require('dotenv');
+const fs = require('fs');
+
 dotenv.config();
+const configFile = './config.json'
+let config = require(configFile);
+
+let whitelist = config.whitelist;
+let boundaries = config.boundaries;
 
 const minute = 60000; // 1 minute in milliseconds
+const hour = 12; // 1 hour in 5 minute increments
 let tick = 0;
-let hour = 12; // 1 hour in 5 minute increments
-let n = 8; // Number of hours
+let n = config.runtime; // Amount of hours to run radar
 
-let coords = {x1: 2365.73, y1: 2096.45, x2: 3345.70,  y2: 1162.56}
-
-const log = function(x){if(DEBUG)console.log(x)};
-
-const whitelist = require('./whitelist.json').players;
 let DEBUG = (process.env.DEBUG=="true");
 console.log(`Debug mode: ${DEBUG}`);
 
-const getGamertag = function(t){let n="";if(1<t.length)for(let e=0;e<t.length;e++)e+1==t.length?n+=t[e]:n=n+t[e]+" ";else n=t[0];return n};
+// Config variables manipulation
+const refreshConfig = function() {delete require.cache[require.resolve(configFile)];config=require(configFile);whitelist=config.whitelist;};
+const updateConfig = function() {fs.writeFileSync(configFile,JSON.stringify(config,null,2));refreshConfig();};
 
+const getGamertag = function(t){let n="";if(1<t.length)for(let e=0;e<t.length;e++)e+1==t.length?n+=t[e]:n=n+t[e]+" ";else n=t[0];return n};
 const calculateTime = function() {let r=Math.floor((hour*n-tick)/hour);let m=((hour*n-tick)%hour)*5;return{r,m};}
 
 function check(message) {
-  log("\n------------- Begin Check -------------")
 	exec("python collect.py", (error, stdout, stderr) => {
-    if (error!=null&&error!=undefined&&error!="") {log("ERROR: ",error,"\n\n------------- End Check -------------");return message.channel.send(error);}
-    if (stderr!=null&&stderr!=undefined&&stderr!="") {log("STD ERROR: ",stderr,"\n\n------------- End Check -------------");return message.channel.send(stderr);}
-    log("Successfully executed collect.py");
+    if (error!=null&&error!=undefined&&error!="") return message.channel.send(error);
+    if (stderr!=null&&stderr!=undefined&&stderr!="") return message.channel.send(stderr);
     // Check Data
 		let players = require('./players.json');
 		delete require.cache[require.resolve("./players.json")];
@@ -36,16 +39,14 @@ function check(message) {
 			px = players.players[i].pos[0];
 			py = players.players[i].pos[1];
 			// Inside Bounderies
-			if (px>coords.x1&&px<coords.x2&&py<coords.y1&&py>coords.y2) {
+			if (px>boundaries.x1&&px<boundaries.x2&&py<boundaries.y1&&py>boundaries.y2) {
 				if (!whitelist.includes(players.players[i].gamertag)) {
 					tick = hour*n;
 					tick++;
-					log(`Player ${players.players[i].gamertag} found in base.\n\n------------- End Check -------------`);
 					return message.channel.send(`@everyone \`${players.players[i].gamertag}\` is in our base!`);
 				}
 			}
 		}
-		log("No players found\n\n------------- End Check -------------");
 	});
 }
 
@@ -56,15 +57,15 @@ function startSystem(message) {
   	// Runs for 'n' hours
     if (tick <= hour*n) {
       startSystem(message);
-    } else {tick=0;log("\nSystem Alarm Disabled");return message.channel.send("System Alarm Disabled");}
+    } else {tick=0;return message.channel.send("System Alarm Disabled");}
   }, minute*5); // 5 minutes
 }
 
 function forceCheck(message) {
 	log("\n------------- Begin Force Check -------------");
 	exec("python collect.py", (error, stdout, stderr) => {
-  	if (error!=null&&error!=undefined&&error!="") {log("ERROR: ",error,"\n\n------------- End Force Check -------------");return message.channel.send(error);}
-  	if (stderr!=null&&stderr!=undefined&&stderr!="") {log("STD ERROR: ",stderr,"\n\n------------- End Force Check -------------");return message.channel.send(stderr);}
+  	if (error!=null&&error!=undefined&&error!="") return message.channel.send(error);
+    if (stderr!=null&&stderr!=undefined&&stderr!="") return message.channel.send(stderr);
     log("Successfully executed collect.py");
     message.channel.send("Checking...")
 	 	let players = require('./players.json');
@@ -75,14 +76,12 @@ function forceCheck(message) {
 	 		px = players.players[i].pos[0]
 			py = players.players[i].pos[1]
 			// Inside Bounderies
-			if (px>2326.84&&px<2995.71&&py<1625.04&&py>1061.15) {
+			if (px>boundaries.x1&&px<boundaries.x2&&py<boundaries.y1&&py>boundaries.y2) {
 				if (!whitelist.includes(players.players[i].gamertag)) {
-					log(`Player ${players.players[i].gamertag} found in base.\n\n------------- End Force Check -------------`);
 					return message.channel.send(`@everyone \`${players.players[i].gamertag}\` is in our base!`);
 				}
 			}
 		}
-	  log("No players found\n\n------------- End Force Check -------------")
 		return message.channel.send('None');
 	});
 }
@@ -106,11 +105,9 @@ function calculateVector(pos, lastPos) {
 }
 
 function playerList(message) {
-	log("\n------------- Begin Collect Player List -------------");
 	exec("python collect.py", (error, stdout, stderr) => {
-		if (error!=null&&error!=undefined&&error!="") {log("ERROR: ",error,"\n\n------------- End Collect Player List -------------");return message.channel.send(error);}
-    if (stderr!=null&&stderr!=undefined&&stderr!="") {log("STD ERROR: ",stderr,"\n\n------------- End Collect Player List -------------");return message.channel.send(stderr);}
-    log("Successfully executed collect.py");
+		if (error!=null&&error!=undefined&&error!="") return message.channel.send(error);
+    if (stderr!=null&&stderr!=undefined&&stderr!="") return message.channel.send(stderr);
 		let players = require('./players.json');
 		delete require.cache[require.resolve("./players.json")];
 		players = require("./players.json");
@@ -137,20 +134,17 @@ function playerList(message) {
 				offline.addFields({ name: `**${players.players[i].gamertag}** is:`, value: `\`${players.players[i].connectionStatus}\``, inline: false });
 			}
 		}
-		log(`Online: ${onlinePlayers}\nOffline: ${offlinePlayers}\n\n------------- End Collect Player List -------------`);
 		message.channel.send(offline);
 		return message.channel.send(online);
 	});
 }
 
 function currentPos(message, args) {
-	log("\n------------- Begin Current Player Pos -------------")
 	if (args.length==0) {log("ERROR: No Gamertag provided\n\n------------- End Current Player Pos -------------");return message.channel.send(`You need to provide a gamertag`);}
 	exec("python collect.py", (error, stdout, stderr) => {
-    if (error!=null&&error!=undefined&&error!="") {log("ERROR: ",error,"\n\n------------- End Current Player Pos -------------");return message.channel.send(error);}
-    if (stderr!=null&&stderr!=undefined&&stderr!="") {log("STD ERROR: ",stderr,"\n\n------------- End Current Player Pos -------------");return message.channel.send(stderr);}
-    log("Successfully executed collect.py");		
-		let players = require('./players.json');
+    if (error!=null&&error!=undefined&&error!="") return message.channel.send(error);
+    if (stderr!=null&&stderr!=undefined&&stderr!="") return message.channel.send(stderr);
+    let players = require('./players.json');
 		delete require.cache[require.resolve("./players.json")];
 		players = require("./players.json");
 		let gamertag = getGamertag(args);
@@ -164,35 +158,25 @@ function currentPos(message, args) {
 					lastPos = players.players[i].posHistory[players.players[i].posHistory.length-1].pos
 					let {distance, theta, dir} = calculateVector(pos, lastPos);
 
-					log(`**__${gamertag}'s current positional data:__**`)
-					log(`**${gamertag}** has moved **__${distance}m @${theta}° ${dir}__**`)
-					log(`**From Last Position:** ${lastPos[0]} / ${lastPos[1]}  at  **Last Time:** ${players.players[i].posHistory[players.players[i].posHistory.length-1].time}`)
-					log(`**To Latest Position:** ${pos[0]} / ${pos[1]}  at  **Latest Time:** ${players.players[i].time}\n\n------------- End Current Player Pos -------------`)
-
 					message.channel.send(`**__${gamertag}'s current positional data:__**`)
 					message.channel.send(`**${gamertag}** has moved **__${distance}m @${theta}° ${dir}__**`);
 					message.channel.send(`**From Last Position:** \`${lastPos[0]} / ${lastPos[1]}\`  at  **Last Time:** \`${players.players[i].posHistory[players.players[i].posHistory.length-1].time}\``);
 					return message.channel.send(`**To Latest Position:** \`${pos[0]} / ${pos[1]}\`  at  **Latest Time:** \`${players.players[i].time}\``);
 				}
-				log(`**__${gamertag}'s current positional data:__**`)
-				log(`**Latest Position:** ${pos[0]} / ${pos[1]}  at  **Latest Time:** ${players.players[i].time}\n\n------------- End Current Player Pos -------------`)
 				message.channel.send(`**__${gamertag}'s current positional data:__**`)
 				return message.channel.send(`**Latest Position:** \`${pos[0]} / ${pos[1]}\`  at  **Latest Time:** \`${players.players[i].time}\``);	
 			}
 		}
-		log(`Player \`${gamertag}\` not found\n\n------------- End Current Player Pos -------------`)
 		return message.channel.send(`Player \`${gamertag}\` not found`);
 	});
 }
 
 function checkPosHistory(message, args) {
-	log("\n------------- Begin Player Pos History -------------")
 	if (args.length==0) {log("ERROR: No Gamertag provided\n\n------------- End Player History Pos -------------");return message.channel.send(`You need to provide a gamertag`);}
 	exec("python collect.py", (error, stdout, stderr) => {
-    if (error!=null&&error!=undefined&&error!="") {log("ERROR: ",error,"\n\n------------- End Player Pos History -------------");return message.channel.send(error);}
-    if (stderr!=null&&stderr!=undefined&&stderr!="") {log("STD ERROR: ",stderr,"\n\n------------- End Player Pos History -------------");return message.channel.send(stderr);}
-    log("Successfully executed collect.py");	
-		let players = require('./players.json');
+    if (error!=null&&error!=undefined&&error!="") return message.channel.send(error);
+    if (stderr!=null&&stderr!=undefined&&stderr!="") return message.channel.send(stderr);
+    let players = require('./players.json');
 		delete require.cache[require.resolve("./players.json")];
 		players = require("./players.json");
 		let gamertag = getGamertag(args);
@@ -201,14 +185,11 @@ function checkPosHistory(message, args) {
 		for (let i = 0; i < players.players.length; i++) {
 			if (players.players[i].gamertag==gamertag) {
 				if (players.players[i].time==null) {log(`Player \`${gamertag}\` has no position data.`);return message.channel.send(`Player \`${gamertag}\` has no position data.`);}
-				log(`**__${gamertag}'s positional history:__**`);
-				log(`**Latest Positions:** \`${players.players[i].pos[0]} / ${players.players[i].pos[1]}\`  at  **Latest Time:** \`${players.players[i].time}\``);
 				playerHistory = [];
 				message.channel.send(`**__${gamertag}'s positional history:__**`)
 				message.channel.send(`**Latest Positions:** \`${players.players[i].pos[0]} / ${players.players[i].pos[1]}\`  at  **Latest Time:** \`${players.players[i].time}\``);	
 				message.channel.send(`Collecting Position History...`);
 				for (let j = 0; j < players.players[i].posHistory.length; j++) {
-					log(`**Position:** ${players.players[i].posHistory[j].pos[0]} / ${players.players[i].posHistory[j].pos[1]}  at  **Time:** ${players.players[i].posHistory[j].time}`);
 					playerHistory.push(`**Position:** \`${players.players[i].posHistory[j].pos[0]} / ${players.players[i].posHistory[j].pos[1]}\`  at  **Time:** \`${players.players[i].posHistory[j].time}\``);	
 				}
 				message.channel.send(playerHistory);
@@ -217,72 +198,92 @@ function checkPosHistory(message, args) {
 				if (players.players[i].posHistory.length>0) {
 					lastPos = players.players[i].posHistory[players.players[i].posHistory.length-1].pos
 					let {distance, theta, dir} = calculateVector(pos, lastPos);
-					
-					log(`**__${gamertag}'s current positional data:__**`);
-					log(`**${gamertag}** has moved **__${distance}m @${theta}° ${dir}__**`);
-					log(`**From Last Position:** ${lastPos[0]} / ${lastPos[1]}  at  **Last Time:** ${players.players[i].posHistory[players.players[i].posHistory.length-1].time}`);
-					log(`**To Latest Position:** ${pos[0]} / ${pos[1]}  at  **Latest Time:** ${players.players[i].time}\n\n------------- End Player Pos History -------------`);
-
+				
 					message.channel.send(`**__${gamertag}'s current positional data:__**`);
 					message.channel.send(`**${gamertag}** has moved **__${distance}m @${theta}° ${dir}__**`);
 					message.channel.send(`**From Last Position:** \`${lastPos[0]} / ${lastPos[1]}\`  at  **Last Time:** \`${players.players[i].posHistory[players.players[i].posHistory.length-1].time}\``);
 					message.channel.send(`**To Latest Position:** \`${pos[0]} / ${pos[1]}\`  at  **Latest Time:** \`${players.players[i].time}\``);
 					return message.channel.send("Done");
 				}
-				log(`**__${gamertag}'s current positional data:__**`)
-				log(`**Latest Position:** ${pos[0]} / ${pos[1]}  at  **Latest Time:** ${players.players[i].time}\n\n------------- End Player Pos History -------------`);
 				message.channel.send(`**__${gamertag}'s current positional data:__**`)
 				message.channel.send(`**Latest Position:** \`${pos[0]} / ${pos[1]}\`  at  **Latest Time:** \`${players.players[i].time}\``);	
 				return message.channel.send("Done");
 			}
 		}
-		log(`Player \`${gamertag}\` not found\n\n------------- End Player Pos History -------------`);
 		return message.channel.send(`Player \`${gamertag}\` not found`);
 	});
 }
 
 function updateLogs(message) {
-	log("\n------------- Begin Force Update Logs -------------");
 	exec("python collect.py", (error, stdout, stderr) => {
-    if (error!=null&&error!=undefined&&error!="") {log("ERROR: ",error,"\n\n------------- End Force Update Logs -------------");return message.channel.send(error);}
-    if (stderr!=null&&stderr!=undefined&&stderr!="") {log("STD ERROR: ",stderr,"\n\n------------- End Force Update Logs -------------");return message.channel.send(stderr);}
-    log("Successfully executed collect.py");
-		log(`Updated Logs\n\n------------- End Force Update Logs -------------`);
-		return message.channel.send(`Updated Logs`);
+    if (error!=null&&error!=undefined&&error!="") return message.channel.send(error);
+    if (stderr!=null&&stderr!=undefined&&stderr!="") return message.channel.send(stderr);
+    return message.channel.send(`Updated Logs`);
 	});
 }
 
 function onlineStatus(message, args) {
-	log("\n------------- Begin Check Player Connection Status -------------");
 	if (args.length==0) return message.channel.send(`You need to provide a gamertag`);
 	exec("python collect.py", (error, stdout, stderr) => {
-    if (error!=null&&error!=undefined&&error!="") {log("ERROR: ",error,"\n\n------------- End Check Player Connection Status -------------");return message.channel.send(error);}
-    if (stderr!=null&&stderr!=undefined&&stderr!="") {log("STD ERROR: ",stderr,"\n\n------------- End Check Player Connection Status -------------");return message.channel.send(stderr);}
-    log("Successfully executed collect.py");	
-		let players = require('./players.json');
+    if (error!=null&&error!=undefined&&error!="") return message.channel.send(error);
+    if (stderr!=null&&stderr!=undefined&&stderr!="") return message.channel.send(stderr);
+    let players = require('./players.json');
 		delete require.cache[require.resolve("./players.json")];
 		players = require("./players.json");
 		let gamertag = getGamertag(args);
 		for (let i = 0; i < players.players.length; i++) {
 			if (players.players[i].gamertag==gamertag) {
-				log(`Player \`${gamertag}\` is \`${players.players[i].connectionStatus}\`\n\n------------- End Check Player Connection Status -------------`);
 				return message.channel.send(`Player \`${gamertag}\` is \`${players.players[i].connectionStatus}\``);
 			}
 		}
-		log(`Player \`${gamertag}\` not found\n\n------------- End Check Player Connection Status -------------`);
 		return message.channel.send(`Player \`${gamertag}\` not found`);
 	});
 }
 
 function restartServer(message) {
-	log("\n------------- Begin Restart Server -------------");
 	exec("python restart.py", (error, stdout, stderr) => {
-		if (error!=null&&error!=undefined&&error!="") {log("ERROR: ",error,"\n\n------------- End Restart Server -------------");return message.channel.send(error);}
-    if (stderr!=null&&stderr!=undefined&&stderr!="") {log("STD ERROR: ",stderr,"\n\n------------- End Restart Server -------------");return message.channel.send(stderr);}
-    log("Successfully executed restart.py");
-    log("Restarting Server...\n\n------------- End Restart Server -------------")
-    return message.channel.send("Restarting Server...");
+		if (error!=null&&error!=undefined&&error!="") return message.channel.send(error);
+    if (stderr!=null&&stderr!=undefined&&stderr!="") return message.channel.send(stderr);
+		return message.channel.send("Restarting Server...");
 	});
+}
+
+function updateRadar(message, args) {
+	if (args.length==0) return message.channel.send(`You need to provide an \` x1 \` \` y1 \` \` x2 \` \` y2 \``);
+	if (args.length>0&&args.length<4) return message.channel.send(`You're missing coordinates D:`);
+	config.boundaries.x1 = args[0];
+	config.boundaries.y1 = args[1];
+	config.boundaries.x2 = args[2];
+	config.boundaries.y2 = args[3];
+	updateConfig();
+	return message.channel.send(`Boundaries are now between \` [${args[0]} / ${args[1]}] \` / \` [${args[2]} / ${args[3]}] \``);
+}
+
+function addWhitelist(message, args) {
+	if (args.length==0) return message.channel.send(`You need to provide an gamertag`);
+	let gamertag = getGamertag(args);
+	config.whitelist.push(gamertag);
+	updateConfig();
+	return message.channel.send(`Added \` ${args[0]} \` to radar whitelist`);
+}
+
+function removeWhitelist(message, args) {
+	if (args.length==0) return message.channel.send(`You need to provide an gamertag`);
+	let gamertag = getGamertag(args);
+	if (!whitelist.includes(gamertag)) return message.channel.send(`Player \` ${gamertag} \` is not in the whitelist: use command \` ?whitelistAdd <gamertag> \` to add this players.`);
+	config.whitelist = whitelist.filter(e => e !== gamertag);
+	updateConfig();
+	return message.channel.send(`Removed \` ${gamertag} \` from radar whitelist`);
+}
+
+function updateRuntime(message, args) {
+	if (args.length==0) return message.channel.send(`You need to provide a runtime number in hours`);
+	if (parseInt(args[0])>24) return message.channel.send('The runtime for the alarm can not be longer than 24 hours');
+	config.runtime = parseInt(args[0]);
+	tick = (hour*n)++; // Update tick to stop alarm, before changing runtime.
+	message.channel.send('Stopping Alarm... This may take a couple minutes');
+	updateConfig();
+	return message.channel.send(`Alarm runtime is now set to ${args[0]}h`);
 }
 
 client.on('ready', () => {
@@ -323,17 +324,20 @@ client.on('message', async (message) => {
     })
 
   // Commands
-  if (command == 'ping') { log("\nPing\n");return message.channel.send('Pong!');}
+  if (command == 'ping') {log("\nPing\n");return message.channel.send('Pong!');}
   if (command == 'help') return message.channel.send(help);
-  if (command == 'playerlist') playerList(message);
-  if (command == 'playerhistory') checkPosHistory(message, args);
-  if (command == 'currentpos') currentPos(message, args);
-  if (command == 'updatelogs') updateLogs(message);
-  if (command == 'onlinestatus') onlineStatus(message, args);
-  if (command == 'restartserver') restartServer(message);
-  if (command == 'forcecheck') forceCheck(message);
+  if (command == 'playerlist' || command == 'pl') playerList(message);
+  if (command == 'playerhistory' || command == 'history') checkPosHistory(message, args);
+  if (command == 'currentpos' || command == 'pos') currentPos(message, args);
+  if (command == 'updatelogs' || command == 'update') updateLogs(message);
+  if (command == 'onlinestatus' || command == 'online') onlineStatus(message, args);
+  if (command == 'restartserver' || command == 'rsserver') restartServer(message);
+  if (command == 'forcecheck' || command == 'force') forceCheck(message);
+  if (command == 'updateradar' || command == 'update') updateRadar(message, args);
+  if (command == 'whitelistadd' || command == 'wladd') addWhitelist(message, args);
+  if (command == 'whitelistremove' || command == 'wlremove') removeWhitelist(message, args); 
   
-  if (command == 'isactive') {
+  if (command == 'isactive' || command == 'active' || command == 'time' || command == 'timer') {
   	if (tick > 0) {
   		message.channel.send(`The alarm is active, and will be active for \`${calculateTime().r}h ${calculateTime().m}m\`...`)
   		return message.channel.send("use \`?restart\` to restart the alarm.");
