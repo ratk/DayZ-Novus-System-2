@@ -16,9 +16,6 @@ const hour = 12; // 1 hour in 5 minute increments
 let tick = 0;
 let n = config.runtime; // Amount of hours to run radar
 
-let DEBUG = (process.env.DEBUG=="true");
-console.log(`Debug mode: ${DEBUG}`);
-
 // Config variables manipulation
 const refreshConfig = function() {delete require.cache[require.resolve(configFile)];config=require(configFile);whitelist=config.whitelist;};
 const updateConfig = function() {fs.writeFileSync(configFile,JSON.stringify(config,null,2));refreshConfig();};
@@ -124,7 +121,7 @@ function playerList(message) {
     	.setTitle('**__Offlines Players__**')
     	.setAuthor('McDazzzled', 'https://avatars.githubusercontent.com/u/48144618?v=4', 'https://github.com/SowinskiBraeden')
 
-    if (players.players.length==0) {log("No players in logs\n\n------------- End Collect Player List -------------");return message.channel.send("No players in logs");}
+    if (players.players.length==0) return message.channel.send("No players in logs");
 		for (let i = 0; i < players.players.length; i++) {
 			if (players.players[i].connectionStatus=="Online") {
 				if (DEBUG) onlinePlayers.push(players.players[i].gamertag);
@@ -140,7 +137,7 @@ function playerList(message) {
 }
 
 function currentPos(message, args) {
-	if (args.length==0) {log("ERROR: No Gamertag provided\n\n------------- End Current Player Pos -------------");return message.channel.send(`You need to provide a gamertag`);}
+	if (args.length==0) return message.channel.send(`You need to provide a gamertag`);
 	exec("python collect.py", (error, stdout, stderr) => {
     if (error!=null&&error!=undefined&&error!="") return message.channel.send(error);
     if (stderr!=null&&stderr!=undefined&&stderr!="") return message.channel.send(stderr);
@@ -151,7 +148,7 @@ function currentPos(message, args) {
 		let pos, lastPos;
 		for (let i = 0; i < players.players.length; i++) {
 			if (players.players[i].gamertag==gamertag) {
-				if (players.players[i].time==null) {log(`Player \`${gamertag}\` has no position data.`);return message.channel.send(`Player \`${gamertag}\` has no position data.`);}
+				if (players.players[i].time==null) return message.channel.send(`Player \`${gamertag}\` has no position data.`);
 				pos = players.players[i].pos;
 				message.channel.send("Calculating...")
 				if (players.players[i].posHistory.length>0) {
@@ -172,7 +169,7 @@ function currentPos(message, args) {
 }
 
 function checkPosHistory(message, args) {
-	if (args.length==0) {log("ERROR: No Gamertag provided\n\n------------- End Player History Pos -------------");return message.channel.send(`You need to provide a gamertag`);}
+	if (args.length==0) return message.channel.send(`You need to provide a gamertag`);
 	exec("python collect.py", (error, stdout, stderr) => {
     if (error!=null&&error!=undefined&&error!="") return message.channel.send(error);
     if (stderr!=null&&stderr!=undefined&&stderr!="") return message.channel.send(stderr);
@@ -184,7 +181,7 @@ function checkPosHistory(message, args) {
 		let playerHistory;
 		for (let i = 0; i < players.players.length; i++) {
 			if (players.players[i].gamertag==gamertag) {
-				if (players.players[i].time==null) {log(`Player \`${gamertag}\` has no position data.`);return message.channel.send(`Player \`${gamertag}\` has no position data.`);}
+				if (players.players[i].time==null) return message.channel.send(`Player \`${gamertag}\` has no position data.`);
 				playerHistory = [];
 				message.channel.send(`**__${gamertag}'s positional history:__**`)
 				message.channel.send(`**Latest Positions:** \`${players.players[i].pos[0]} / ${players.players[i].pos[1]}\`  at  **Latest Time:** \`${players.players[i].time}\``);	
