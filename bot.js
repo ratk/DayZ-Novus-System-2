@@ -106,8 +106,6 @@ function playerList(message) {
 		let players = require('./players.json');
 		delete require.cache[require.resolve("./players.json")];
 		players = require("./players.json");
-		let onlinePlayers = [];
-		let offlinePlayers = [];
 
 		let online = new Discord.MessageEmbed()
     	.setColor('#ed3e24')
@@ -122,10 +120,8 @@ function playerList(message) {
     if (players.players.length==0) return message.channel.send("No players in logs");
 		for (let i = 0; i < players.players.length; i++) {
 			if (players.players[i].connectionStatus=="Online") {
-				if (DEBUG) onlinePlayers.push(players.players[i].gamertag);
 				online.addFields({ name: `**${players.players[i].gamertag}** is:`, value: `\`${players.players[i].connectionStatus}\``, inline: false });
 			} else {
-				if (DEBUG) offlinePlayers.push(players.players[i].gamertag);
 				offline.addFields({ name: `**${players.players[i].gamertag}** is:`, value: `\`${players.players[i].connectionStatus}\``, inline: false });
 			}
 		}
