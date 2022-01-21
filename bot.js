@@ -110,12 +110,12 @@ function playerList(message) {
 		let online = new Discord.MessageEmbed()
     	.setColor('#ed3e24')
     	.setTitle('**__Online Players:__**')
-    	.setAuthor('McDazzzled', 'https://avatars.githubusercontent.com/u/48144618?v=4', 'https://github.com/SowinskiBraeden')
+    	.setAuthor('Novus', 'https://avatars.githubusercontent.com/u/48144618?v=4', 'https://github.com/SowinskiBraeden')
 
     let offline = new Discord.MessageEmbed()
     	.setColor('#ed3e24')
     	.setTitle('**__Offlines Players__**')
-    	.setAuthor('McDazzzled', 'https://avatars.githubusercontent.com/u/48144618?v=4', 'https://github.com/SowinskiBraeden')
+    	.setAuthor('Novus', 'https://avatars.githubusercontent.com/u/48144618?v=4', 'https://github.com/SowinskiBraeden')
 
     if (players.players.length==0) return message.channel.send("No players in logs");
 		for (let i = 0; i < players.players.length; i++) {
@@ -292,7 +292,7 @@ client.on('message', async (message) => {
   const help = new Discord.MessageEmbed()
     .setColor('#ed3e24')
     .setTitle('**Commands:**')
-    .setAuthor('McDazzzled', 'https://avatars.githubusercontent.com/u/48144618?v=4', 'https://github.com/SowinskiBraeden')
+    .setAuthor('Novus', 'https://avatars.githubusercontent.com/u/48144618?v=4', 'https://github.com/SowinskiBraeden')
     .setDescription('Novus Security Commmand')
     .addFields({
       name: `**__General Commands:__**`,
@@ -333,7 +333,7 @@ client.on('message', async (message) => {
   const shortcuts = new Discord.MessageEmbed()
     .setColor('#ed3e24')
     .setTitle('**Command Shortcuts:**')
-    .setAuthor('McDazzzled', 'https://avatars.githubusercontent.com/u/48144618?v=4', 'https://github.com/SowinskiBraeden')
+    .setAuthor('Novus', 'https://avatars.githubusercontent.com/u/48144618?v=4', 'https://github.com/SowinskiBraeden')
     .setDescription('Novus Security Commmand')
     .addFields({
       name: `**__Command Shortcuts:__**`,
