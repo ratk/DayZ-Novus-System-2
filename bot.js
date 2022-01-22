@@ -276,6 +276,21 @@ function updateRuntime(message, args) {
 	return message.channel.send(`Alarm runtime is now set to ${args[0]}h`);
 }
 
+function getPlayerCount(message) {
+	exec("python collect.py", (error, stdout, stderr) => {
+		if (error!=null&&error!=undefined&&error!="") return message.channel.send(error);
+    if (stderr!=null&&stderr!=undefined&&stderr!="") return message.channel.send(stderr);
+		let players = require('./players.json').players;
+		delete require.cache[require.resolve("./players.json")];
+		players = require("./players.json").players;
+		let onlineCount = 0;
+		for (let i = 0; i < players.length; i++) {
+			if (players[i].connectionStatus=="Online") onlineCount++;
+		}
+		return message.channel.send(`${onlienCount}/32 players online.`);
+	});
+}
+
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}`);
 });
