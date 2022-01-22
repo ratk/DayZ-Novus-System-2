@@ -287,7 +287,7 @@ function getPlayerCount(message) {
 		for (let i = 0; i < players.length; i++) {
 			if (players[i].connectionStatus=="Online") onlineCount++;
 		}
-		return message.channel.send(`${onlienCount}/32 players online.`);
+		return message.channel.send(`${onlineCount}/32 players online.`);
 	});
 }
 
