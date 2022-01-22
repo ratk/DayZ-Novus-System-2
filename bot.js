@@ -317,13 +317,14 @@ client.on('message', async (message) => {
       **${prefix}ping** - \`Responds with Pong to check Bot responce\`
 			**${prefix}restartServer** - \`Restarts Server\`
     	**${prefix}runtime** - \`Returns the max runtime for the alarm radar\`
+      **${prefix}playerList** - \`Shows current players\`
+      **${prefix}playerCount** - \`Shows number of players in server\`
       `,
       inline: false
     }, {
     	name: `**__Tracking Commands:__**`,
       value: `
       **${prefix}onlineStatus** <gamertag> - \`Check if player is online\`
-      **${prefix}playerList** - \`Shows current players\`
       **${prefix}playerHistory** <gamertag> - \`Check specific player history\`
       **${prefix}currentPos** <gamertag> - \`Forces a check for player in base\`
     	**${prefix}forceCheck** - \`Forces a check for player in base\`
@@ -366,6 +367,7 @@ client.on('message', async (message) => {
     	**${prefix}removeWhitelist** - \`?wlRemove\`
     	**${prefix}updateRuntime** - \`?updateRt\`
     	**${prefix}runtime** - \`?rt\`
+    	**${prefix}playerCount** - \`?count\`
       `,
       inline: false
     })
@@ -385,7 +387,8 @@ client.on('message', async (message) => {
   if (command == 'whitelistadd' || command == 'wladd') addWhitelist(message, args);
   if (command == 'whitelistremove' || command == 'wlremove') removeWhitelist(message, args); 
   if (command == 'updateruntime' || command == 'updatert') updateRuntime(message, args);
-  if (command == 'runtime' || command == 'rt') return message.channel.send(`The current runtime for the base alarm is \` ${n}h \``)
+  if (command == 'runtime' || command == 'rt') return message.channel.send(`The current runtime for the base alarm is \` ${n}h \``);
+  if (command == 'playerCount' || command == 'count') getPlayerCount(message);
 
   if (command == 'isactive' || command == 'active' || command == 'time' || command == 'timer') {
   	if (tick > 0) {
