@@ -3,9 +3,6 @@ logs.ADM
 players.json
 clean.txt
 
-# Configuration
-config.json
-
 # Dependencies
 node_modules/*
 
