@@ -276,10 +276,10 @@ function updateRuntime(message, args) {
 	return message.channel.send(`Alarm runtime is now set to \`${args[0]}h\``);
 }
 
-function getPlayerCount(message) {
+function getPlayerCount() {
 	exec("python collect.py", (error, stdout, stderr) => {
-		if (error!=null&&error!=undefined&&error!="") return message.channel.send(error);
-    if (stderr!=null&&stderr!=undefined&&stderr!="") return message.channel.send(stderr);
+		if (error!=null&&error!=undefined&&error!="") return null;
+    if (stderr!=null&&stderr!=undefined&&stderr!="") return null;
 		let players = require('./players.json').players;
 		delete require.cache[require.resolve("./players.json")];
 		players = require("./players.json").players;
@@ -287,7 +287,7 @@ function getPlayerCount(message) {
 		for (let i = 0; i < players.length; i++) {
 			if (players[i].connectionStatus=="Online") onlineCount++;
 		}
-		return message.channel.send(`${onlineCount}/32 players online.`);
+		return onlineCount;
 	});
 }
 
@@ -388,7 +388,7 @@ client.on('message', async (message) => {
   if (command == 'whitelistremove' || command == 'wlremove') removeWhitelist(message, args); 
   if (command == 'updateruntime' || command == 'updatert') updateRuntime(message, args);
   if (command == 'runtime' || command == 'rt') return message.channel.send(`The current runtime for the base alarm is \` ${n}h \``);
-  if (command == 'playerCount' || command == 'count') getPlayerCount(message);
+  if (command == 'playercount' || command == 'count') return message.channel.send(`${getPlayerCount()}/32 players online.`);
 
   if (command == 'isactive' || command == 'active' || command == 'time' || command == 'timer') {
   	if (tick > 0) {
