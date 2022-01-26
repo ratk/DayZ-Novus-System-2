@@ -362,7 +362,7 @@ client.on('message', async (message) => {
       **${prefix}restart** - \`?rsAlarm\`
     	**${prefix}forceCheck** - \`?check\`
     	**${prefix}isActive** - \`?active\` or \`?timer\` or \`?time\`
-    	**${prefix}updateRadar** - \`?update\`
+    	**${prefix}updateRadar** - \`?updateRd\`
     	**${prefix}addWhitelist** - \`?wlAdd\`
     	**${prefix}removeWhitelist** - \`?wlRemove\`
     	**${prefix}updateRuntime** - \`?updateRt\`
@@ -382,12 +382,14 @@ client.on('message', async (message) => {
   if (command == 'updatelogs' || command == 'update') updateLogs(message);
   if (command == 'onlinestatus' || command == 'online') onlineStatus(message, args);
   if (command == 'restartserver' || command == 'rsserver') restartServer(message);
-  if (command == 'forcecheck' || command == 'check') forceCheck(message);
-  if (command == 'updateradar' || command == 'update') updateRadar(message, args);
-  if (command == 'whitelistadd' || command == 'wladd') addWhitelist(message, args);
-  if (command == 'whitelistremove' || command == 'wlremove') removeWhitelist(message, args); 
-  if (command == 'updateruntime' || command == 'updatert') updateRuntime(message, args);
-  if (command == 'runtime' || command == 'rt') return message.channel.send(`The current runtime for the base alarm is \` ${n}h \``);
+  // if (command == 'forcecheck' || command == 'check') forceCheck(message);
+  if (command == 'forcecheck' || command == 'check') return message.channel.send(`Alarm Radar is disabled.`);
+  // if (command == 'updateradar' || command == 'updaterd') updateRadar(message, args);
+  if (command == 'updateradar' || command =='update') return message.channel.send(`Alarm Radar is disabled.`);
+  // if (command == 'whitelistadd' || command == 'wladd') addWhitelist(message, args);
+  // if (command == 'whitelistremove' || command == 'wlremove') removeWhitelist(message, args); 
+  // if (command == 'updateruntime' || command == 'updatert') updateRuntime(message, args);
+  // if (command == 'runtime' || command == 'rt') return message.channel.send(`The current runtime for the base alarm is \` ${n}h \``);
   if (command == 'playercount' || command == 'count') return message.channel.send(`${getPlayerCount()}/32 players online.`);
 
   // if (command == 'isactive' || command == 'active' || command == 'time' || command == 'timer') {
