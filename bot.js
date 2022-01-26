@@ -390,33 +390,44 @@ client.on('message', async (message) => {
   if (command == 'runtime' || command == 'rt') return message.channel.send(`The current runtime for the base alarm is \` ${n}h \``);
   if (command == 'playercount' || command == 'count') return message.channel.send(`${getPlayerCount()}/32 players online.`);
 
-  if (command == 'isactive' || command == 'active' || command == 'time' || command == 'timer') {
-  	if (tick > 0) {
-  		message.channel.send(`The alarm is active, and will be active for \`${calculateTime().r}h ${calculateTime().m}m\`...`)
-  		return message.channel.send("use \`?restart\` to restart the alarm.");
-  	}
-  	return message.channel.send("System Alarm is not active, use \`?start\` to start the alarm.");	
-  }
+  // if (command == 'isactive' || command == 'active' || command == 'time' || command == 'timer') {
+  // 	if (tick > 0) {
+  // 		message.channel.send(`The alarm is active, and will be active for \`${calculateTime().r}h ${calculateTime().m}m\`...`)
+  // 		return message.channel.send("use \`?restart\` to restart the alarm.");
+  // 	}
+  // 	return message.channel.send("System Alarm is not active, use \`?start\` to start the alarm.");	
+  // }
+  // if (command == 'start') {
+  // 	if (tick>0) return message.channel.send("System Alarm is already active, use \`?restart\` to restart the alarm.");	
+  // 	tick = 0;
+  // 	message.channel.send("System Alarm Started");
+  // 	startSystem(message);
+  // }
 
-  if (command == 'start') {
-  	if (tick>0) return message.channel.send("System Alarm is already active, use \`?restart\` to restart the alarm.");	
-  	tick = 0;
-  	message.channel.send("System Alarm Started");
-  	startSystem(message);
-  }
+  // // Update 'tick' to 'n' hours will force 'startSystem' func stop itself
+  // if (command == 'stop') {
+  // 	if (tick==0) return message.channel.send('The system is not active');
+  // 	tick=hour*n;tick++;
+  // 	return message.channel.send('Stopping... This may take a couple minutes');
+  // }
 
-  // Update 'tick' to 'n' hours will force 'startSystem' func stop itself
-  if (command == 'stop') {
-  	if (tick==0) return message.channel.send('The system is not active');
-  	tick=hour*n;tick++;
-  	return message.channel.send('Stopping... This may take a couple minutes');
-  }
+  // // Update 'tick' back to 0 making 'startSystem' func 'restart'
+  // if (command == 'restart' || command == 'rsalarm') {
+  // 	if (tick==0) return message.channel.send("System Alarm is not active, use \`?start\` to start the alarm.");
+  // 	tick=0;
+  // 	return message.channel.send('Restarting alarm system...');
+  // }
 
-  // Update 'tick' back to 0 making 'startSystem' func 'restart'
-  if (command == 'restart' || command == 'rsalarm') {
-  	if (tick==0) return message.channel.send("System Alarm is not active, use \`?start\` to start the alarm.");
-  	tick=0;
-  	return message.channel.send('Restarting alarm system...');
+  if (command == 'isactive' ||
+  	  command == 'active' ||
+  	  command == 'time' ||
+  	  command == 'timer' ||
+  	  command == 'start' ||
+  	  command == 'stop' ||
+  	  command == 'restart' ||
+  	  command == 'rsalarm' ||
+  	  ) {
+  	return message.channel.send(`Alarm Radar is disabled.`);
   }
 });
 client.login(process.env.token);
