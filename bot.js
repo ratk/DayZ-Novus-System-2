@@ -427,7 +427,7 @@ client.on('message', async (message) => {
   	  command == 'start' ||
   	  command == 'stop' ||
   	  command == 'restart' ||
-  	  command == 'rsalarm' ||
+  	  command == 'rsalarm'
   	  ) {
   	return message.channel.send(`Alarm Radar is disabled.`);
   }
