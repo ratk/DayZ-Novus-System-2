@@ -205,11 +205,11 @@ function checkPosHistory(message, args) {
 	});
 }
 
-function updateLogs(message) {
+function updateLogs(message, doReturn) {
 	exec("python collect.py", (error, stdout, stderr) => {
     if (error!=null&&error!=undefined&&error!="") return message.channel.send(error);
     if (stderr!=null&&stderr!=undefined&&stderr!="") return message.channel.send(stderr);
-    return message.channel.send(`Updated Logs`);
+    if (doReturn) return message.channel.send(`Updated Logs`);
 	});
 }
 
@@ -233,8 +233,8 @@ function onlineStatus(message, args) {
 
 function restartServer(message) {
 	exec("python restart.py", (error, stdout, stderr) => {
-		if (error!=null&&error!=undefined&&error!="") return message.channel.send(error);
-    if (stderr!=null&&stderr!=undefined&&stderr!="") return message.channel.send(stderr);
+		if (error!=null&&error!=undefined&&error!=""&&doReturn) return message.channel.send(error);
+    if (stderr!=null&&stderr!=undefined&&stderr!=""&&doReturn) return message.channel.send(stderr);
 		return message.channel.send("Restarting Server...");
 	});
 }
@@ -276,19 +276,19 @@ function updateRuntime(message, args) {
 	return message.channel.send(`Alarm runtime is now set to \`${args[0]}h\``);
 }
 
-function getPlayerCount() {
-	exec("python collect.py", (error, stdout, stderr) => {
-		if (error!=null&&error!=undefined&&error!="") return null;
-    if (stderr!=null&&stderr!=undefined&&stderr!="") return null;
-		let players = require('./players.json').players;
-		delete require.cache[require.resolve("./players.json")];
-		players = require("./players.json").players;
-		let onlineCount = 0;
-		for (let i = 0; i < players.length; i++) {
-			if (players[i].connectionStatus=="Online") onlineCount++;
-		}
-		return onlineCount;
-	});
+/*
+	Reason this is an async function is I
+	plan to use it in the future to collect
+	data as a background process.
+*/
+async function getPlayerCount() {
+	updateLogs(null, false);
+	let players = require('./players.json').players;
+	delete require.cache[require.resolve("./players.json")];
+	players = require("./players.json").players;
+	let onlineCount = 0;
+	for (let i = 0; i < players.length; i++) if (players[i].connectionStatus=="Online") onlineCount++;
+	return onlineCount;
 }
 
 client.on('ready', () => {
@@ -380,7 +380,7 @@ client.on('message', async (message) => {
   if (command == 'playerlist' || command == 'pl') playerList(message);
   if (command == 'playerhistory' || command == 'history' || command == 'ph') checkPosHistory(message, args);
   if (command == 'currentpos' || command == 'pos') currentPos(message, args);
-  if (command == 'updatelogs' || command == 'update') updateLogs(message);
+  if (command == 'updatelogs' || command == 'update') updateLogs(message, true);
   if (command == 'onlinestatus' || command == 'online') onlineStatus(message, args);
   if (command == 'restartserver' || command == 'rsserver') restartServer(message);
   // if (command == 'forcecheck' || command == 'check') forceCheck(message);
@@ -391,7 +391,7 @@ client.on('message', async (message) => {
   // if (command == 'whitelistremove' || command == 'wlremove') removeWhitelist(message, args); 
   // if (command == 'updateruntime' || command == 'updatert') updateRuntime(message, args);
   // if (command == 'runtime' || command == 'rt') return message.channel.send(`The current runtime for the base alarm is \` ${n}h \``);
-  if (command == 'playercount' || command == 'count') return message.channel.send(`${getPlayerCount()}/32 players online.`);
+  if (command == 'playercount' || command == 'count') return message.channel.send(`${await getPlayerCount()}/32 players online`);
 
   // if (command == 'isactive' || command == 'active' || command == 'time' || command == 'timer') {
   // 	if (tick > 0) {
