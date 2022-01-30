@@ -48,6 +48,7 @@ def getRawLogs():
           }).json()
 
   url = data['data']['token']['url']
+  if not os.path.exists('output'): os.mkdir('output')
   urllib.request.urlretrieve(url, "./output/logs.ADM")
 
 
