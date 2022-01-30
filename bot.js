@@ -1,13 +1,24 @@
-const { exec } = require('child_process');
+const childProcess = require('child_process');
 const Discord = require('discord.js');
 const client = new Discord.Client({disableEveryone: false, intents: [Discord.Intents.FLAGS.GUILDS, Discord.Intents.FLAGS.GUILD_MESSAGES]});
 const dotenv = require('dotenv');
 const fs = require('fs');
-
+const dayReport = require('./models/dayReportModel');
+const weekReport = require('./models/weekReportModel');
+const mongoose = require('mongoose');
+const {MongoClient} = require('mongodb');
 dotenv.config();
-const configFile = './config.json'
-let config = require(configFile);
 
+// Connect to MongoDB database.
+mongoose.connect(process.env.mongoURI);
+
+let db, dbo;
+
+// Files
+const configFile = './config.json'
+const playerFile = './output/players.json';
+
+let config = require(configFile);
 let whitelist = config.whitelist;
 let boundaries = config.boundaries;
 let n = config.runtime; // Amount of hours to run radar
@@ -16,35 +27,57 @@ const minute = 60000; // 1 minute in milliseconds
 const hour = 12; // 1 hour in 5 minute increments
 let tick = 0;
 
+let reportToday = new dayReport();
+reportToday.serverID = process.env.server_id
+reportToday.report.date = new Date();
+reportToday.report.highestPlayers = 0;
+reportToday.report.averagePlayers = 0;
+
+let reportWeek = new weekReport();
+reportWeek.serverID = process.env.server_id
+reportWeek.report.highestPlayers = 0;
+reportWeek.report.averagePlayers = 0;
+reportWeek.report.averageHighestPlayers = 0;
+
 // Config variables manipulation
-const refreshConfig = function() {delete require.cache[require.resolve(configFile)];config=require(configFile);whitelist=config.whitelist;n=config.runtime;boundaries=config.boundaries;};
-const updateConfig = function() {fs.writeFileSync(configFile,JSON.stringify(config,null,2));refreshConfig();};
+const refreshConfig = async function() {delete require.cache[require.resolve(configFile)];config=require(configFile);whitelist=config.whitelist;n=config.runtime;boundaries=config.boundaries;};
+const updateConfig = async function() {fs.writeFileSync(configFile,JSON.stringify(config,null,2));refreshConfig();};
 
-const getGamertag = function(t){let n="";if(1<t.length)for(let e=0;e<t.length;e++)e+1==t.length?n+=t[e]:n=n+t[e]+" ";else n=t[0];return n};
-const calculateTime = function() {let r=Math.floor((hour*n-tick)/hour);let m=((hour*n-tick)%hour)*5;return{r,m};}
+// Get latest players from json
+const getLatestPlayers = async function() {let p=require(playerFile);delete require.cache[require.resolve(playerFile)];p=require(playerFile);return p;};
 
-function check(message) {
-	exec("python collect.py", (error, stdout, stderr) => {
-    if (error!=null&&error!=undefined&&error!="") return message.channel.send(error);
-    if (stderr!=null&&stderr!=undefined&&stderr!="") return message.channel.send(stderr);
-    // Check Data
-		let players = require('./players.json');
-		delete require.cache[require.resolve("./players.json")];
-		players = require("./players.json");
-		let px, py;
-		for (let i = 0; i < players.players.length; i++) {
-			px = players.players[i].pos[0];
-			py = players.players[i].pos[1];
-			// Inside Bounderies
-			if (px>boundaries.x1&&px<boundaries.x2&&py<boundaries.y1&&py>boundaries.y2) {
-				if (!whitelist.includes(players.players[i].gamertag)) {
-					tick = hour*n;
-					tick++;
-					return message.channel.send(`@everyone \`${players.players[i].gamertag}\` is in our base!`);
-				}
+const getGamertag = async function(t){let n="";if(1<t.length)for(let e=0;e<t.length;e++)e+1==t.length?n+=t[e]:n=n+t[e]+" ";else n=t[0];return n};
+const calculateTime = async function() {let r=Math.floor((hour*n-tick)/hour);let m=((hour*n-tick)%hour)*5;return{r,m};}
+
+// Get latest logs
+async function updateLogs(message, doReturn) {
+	let spawn = childProcess.spawnSync('python', ['collect.py']);
+	let error = spawn.stderr.toString().trim();
+	if (error&&doReturn) return message.channel.send(`Error: ${error}`);
+	if (error) return [true, error];
+	if (doReturn) return message.channel.send(`Updated Logs`);
+	return [false, null];
+}
+
+async function check(message) {
+	let errors = await updateLogs(null, false);
+	if (errors[0]) return message.channel.send(errors[1]);
+  // Check Data
+	let players = await getLatestPlayers();
+	players = players.players;
+	let px, py;
+	for (let i = 0; i < players.length; i++) {
+		px = players[i].pos[0];
+		py = players[i].pos[1];
+		// Inside Bounderies
+		if (px>boundaries.x1&&px<boundaries.x2&&py<boundaries.y1&&py>boundaries.y2) {
+			if (!whitelist.includes(players[i].gamertag)) {
+				tick = hour*n;
+				tick++;
+				return message.channel.send(`@here \`${players[i].gamertag}\` is in the bourndaries!`);
 			}
 		}
-	});
+	}
 }
 
 function startSystem(message) {
@@ -58,30 +91,27 @@ function startSystem(message) {
   }, minute*5); // 5 minutes
 }
 
-function forceCheck(message) {
-	exec("python collect.py", (error, stdout, stderr) => {
-  	if (error!=null&&error!=undefined&&error!="") return message.channel.send(error);
-    if (stderr!=null&&stderr!=undefined&&stderr!="") return message.channel.send(stderr);
-    message.channel.send("Checking...")
-	 	let players = require('./players.json');
-		delete require.cache[require.resolve("./players.json")];
-		players = require("./players.json");
-	 	let px, py;
-	 	for (let i = 0; i < players.players.length; i++) {
-	 		px = players.players[i].pos[0]
-			py = players.players[i].pos[1]
-			// Inside Bounderies
-			if (px>boundaries.x1&&px<boundaries.x2&&py<boundaries.y1&&py>boundaries.y2) {
-				if (!whitelist.includes(players.players[i].gamertag)) {
-					return message.channel.send(`@everyone \`${players.players[i].gamertag}\` is in our base!`);
-				}
+async function forceCheck(message) {
+	let errors = await updateLogs(null, false);
+	if (errors[0]) return message.channel.send(errors[1]);
+	message.channel.send("Checking...")
+ 	let players = await getLatestPlayers();
+	players = players.players;
+ 	let px, py;
+ 	for (let i = 0; i < players.length; i++) {
+ 		px = players[i].pos[0]
+		py = players[i].pos[1]
+		// Inside Bounderies
+		if (px>boundaries.x1&&px<boundaries.x2&&py<boundaries.y1&&py>boundaries.y2) {
+			if (!whitelist.includes(players[i].gamertag)) {
+				return message.channel.send(`@here \`${players[i].gamertag}\` is in the bourndaries!`);
 			}
 		}
-		return message.channel.send('None');
-	});
+	}
+	return message.channel.send('None');
 }
 
-function calculateVector(pos, lastPos) {
+async function calculateVector(pos, lastPos) {
 	let diff = [Math.round(lastPos[0] - pos[0]), Math.round(lastPos[1] - pos[1])];
 	let distance = Math.sqrt(Math.pow(diff[0], 2) + Math.pow(diff[1], 2)).toFixed(0)
 	let theta = Math.abs(Math.atan(diff[1]/diff[0])*180/Math.PI).toFixed(0);
@@ -99,147 +129,126 @@ function calculateVector(pos, lastPos) {
 	return {distance, theta, dir}
 }
 
-function playerList(message) {
-	exec("python collect.py", (error, stdout, stderr) => {
-		if (error!=null&&error!=undefined&&error!="") return message.channel.send(error);
-    if (stderr!=null&&stderr!=undefined&&stderr!="") return message.channel.send(stderr);
-		let players = require('./players.json');
-		delete require.cache[require.resolve("./players.json")];
-		players = require("./players.json");
+async function playerList(message) {
+	let errors = await updateLogs(null, false);
+	if (errors[0]) return message.channel.send(errors[1]);
+	let players = await getLatestPlayers();
+	players = players.players;
 
-		let online = new Discord.MessageEmbed()
-    	.setColor('#ed3e24')
-    	.setTitle('**__Online Players:__**')
-    	.setAuthor('Novus', 'https://avatars.githubusercontent.com/u/48144618?v=4', 'https://github.com/SowinskiBraeden')
+	let online = new Discord.MessageEmbed()
+  	.setColor('#ed3e24')
+  	.setTitle('**__Online Players:__**')
+  	.setAuthor('Novus', 'https://avatars.githubusercontent.com/u/48144618?v=4', 'https://github.com/SowinskiBraeden')
 
-    let offline = new Discord.MessageEmbed()
-    	.setColor('#ed3e24')
-    	.setTitle('**__Offlines Players__**')
-    	.setAuthor('Novus', 'https://avatars.githubusercontent.com/u/48144618?v=4', 'https://github.com/SowinskiBraeden')
+  let offline = new Discord.MessageEmbed()
+  	.setColor('#ed3e24')
+  	.setTitle('**__Offlines Players__**')
+  	.setAuthor('Novus', 'https://avatars.githubusercontent.com/u/48144618?v=4', 'https://github.com/SowinskiBraeden')
 
-    if (players.players.length==0) return message.channel.send("No players in logs");
-		for (let i = 0; i < players.players.length; i++) {
-			if (players.players[i].connectionStatus=="Online") {
-				online.addFields({ name: `**${players.players[i].gamertag}** is:`, value: `\`${players.players[i].connectionStatus}\``, inline: false });
-			} else {
-				offline.addFields({ name: `**${players.players[i].gamertag}** is:`, value: `\`${players.players[i].connectionStatus}\``, inline: false });
-			}
+  if (players.length==0) return message.channel.send("No players in logs");
+	for (let i = 0; i < players.length; i++) {
+		if (players[i].connectionStatus=="Online") {
+			online.addFields({ name: `**${players[i].gamertag}** is:`, value: `\`${players[i].connectionStatus}\``, inline: false });
+		} else {
+			offline.addFields({ name: `**${players[i].gamertag}** is:`, value: `\`${players[i].connectionStatus}\``, inline: false });
 		}
-		message.channel.send(offline);
-		return message.channel.send(online);
-	});
+	}
+	message.channel.send(offline);
+	return message.channel.send(online);
 }
 
-function currentPos(message, args) {
+async function currentPos(message, args) {
 	if (args.length==0) return message.channel.send(`You need to provide a gamertag`);
-	exec("python collect.py", (error, stdout, stderr) => {
-    if (error!=null&&error!=undefined&&error!="") return message.channel.send(error);
-    if (stderr!=null&&stderr!=undefined&&stderr!="") return message.channel.send(stderr);
-    let players = require('./players.json');
-		delete require.cache[require.resolve("./players.json")];
-		players = require("./players.json");
-		let gamertag = getGamertag(args);
-		let pos, lastPos;
-		for (let i = 0; i < players.players.length; i++) {
-			if (players.players[i].gamertag==gamertag) {
-				if (players.players[i].time==null) return message.channel.send(`Player \`${gamertag}\` has no position data.`);
-				pos = players.players[i].pos;
-				message.channel.send("Calculating...")
-				if (players.players[i].posHistory.length>0) {
-					lastPos = players.players[i].posHistory[players.players[i].posHistory.length-1].pos
-					let {distance, theta, dir} = calculateVector(pos, lastPos);
+	let errors = await updateLogs(null, false);
+	if (errors[0]) return message.channel.send(errors[1]);
+  let players = await getLatestPlayers();
+	players = players.players;
+	let gamertag = getGamertag(args);
+	let pos, lastPos;
+	for (let i = 0; i < players.length; i++) {
+		if (players[i].gamertag==gamertag) {
+			if (players[i].time==null) return message.channel.send(`Player \`${gamertag}\` has no position data.`);
+			pos = players[i].pos;
+			message.channel.send("Calculating...")
+			if (players[i].posHistory.length>0) {
+				lastPos = players[i].posHistory[players[i].posHistory.length-1].pos
+				let {distance, theta, dir} = calculateVector(pos, lastPos);
 
-					message.channel.send(`**__${gamertag}'s current positional data:__**`)
-					message.channel.send(`**${gamertag}** has moved **__${distance}m @${theta}° ${dir}__**`);
-					message.channel.send(`**From Last Position:** \`${lastPos[0]} / ${lastPos[1]}\`  at  **Last Time:** \`${players.players[i].posHistory[players.players[i].posHistory.length-1].time}\``);
-					return message.channel.send(`**To Latest Position:** \`${pos[0]} / ${pos[1]}\`  at  **Latest Time:** \`${players.players[i].time}\``);
-				}
 				message.channel.send(`**__${gamertag}'s current positional data:__**`)
-				return message.channel.send(`**Latest Position:** \`${pos[0]} / ${pos[1]}\`  at  **Latest Time:** \`${players.players[i].time}\``);	
+				message.channel.send(`**${gamertag}** has moved **__${distance}m @${theta}° ${dir}__**`);
+				message.channel.send(`**From Last Position:** \`${lastPos[0]} / ${lastPos[1]}\`  at  **Last Time:** \`${players[i].posHistory[players[i].posHistory.length-1].time}\``);
+				return message.channel.send(`**To Latest Position:** \`${pos[0]} / ${pos[1]}\`  at  **Latest Time:** \`${players[i].time}\``);
 			}
+			message.channel.send(`**__${gamertag}'s current positional data:__**`)
+			return message.channel.send(`**Latest Position:** \`${pos[0]} / ${pos[1]}\`  at  **Latest Time:** \`${players[i].time}\``);	
 		}
-		return message.channel.send(`Player \`${gamertag}\` not found`);
-	});
+	}
+	return message.channel.send(`Player \`${gamertag}\` not found`);
 }
 
-function checkPosHistory(message, args) {
+async function checkPosHistory(message, args) {
 	if (args.length==0) return message.channel.send(`You need to provide a gamertag`);
-	exec("python collect.py", (error, stdout, stderr) => {
-    if (error!=null&&error!=undefined&&error!="") return message.channel.send(error);
-    if (stderr!=null&&stderr!=undefined&&stderr!="") return message.channel.send(stderr);
-    let players = require('./players.json');
-		delete require.cache[require.resolve("./players.json")];
-		players = require("./players.json");
-		let gamertag = getGamertag(args);
-		let pos, lastPos;
-		let playerHistory;
-		for (let i = 0; i < players.players.length; i++) {
-			if (players.players[i].gamertag==gamertag) {
-				if (players.players[i].time==null) return message.channel.send(`Player \`${gamertag}\` has no position data.`);
-				playerHistory = [];
-				message.channel.send(`**__${gamertag}'s positional history:__**`)
-				message.channel.send(`**Latest Positions:** \`${players.players[i].pos[0]} / ${players.players[i].pos[1]}\`  at  **Latest Time:** \`${players.players[i].time}\``);	
-				message.channel.send(`Collecting Position History...`);
-				for (let j = 0; j < players.players[i].posHistory.length; j++) {
-					playerHistory.push(`**Position:** \`${players.players[i].posHistory[j].pos[0]} / ${players.players[i].posHistory[j].pos[1]}\`  at  **Time:** \`${players.players[i].posHistory[j].time}\``);	
-				}
-				message.channel.send(playerHistory);
-				message.channel.send("Calculating...");
-				pos = players.players[i].pos;
-				if (players.players[i].posHistory.length>0) {
-					lastPos = players.players[i].posHistory[players.players[i].posHistory.length-1].pos
-					let {distance, theta, dir} = calculateVector(pos, lastPos);
-				
-					message.channel.send(`**__${gamertag}'s current positional data:__**`);
-					message.channel.send(`**${gamertag}** has moved **__${distance}m @${theta}° ${dir}__**`);
-					message.channel.send(`**From Last Position:** \`${lastPos[0]} / ${lastPos[1]}\`  at  **Last Time:** \`${players.players[i].posHistory[players.players[i].posHistory.length-1].time}\``);
-					message.channel.send(`**To Latest Position:** \`${pos[0]} / ${pos[1]}\`  at  **Latest Time:** \`${players.players[i].time}\``);
-					return message.channel.send("Done");
-				}
-				message.channel.send(`**__${gamertag}'s current positional data:__**`)
-				message.channel.send(`**Latest Position:** \`${pos[0]} / ${pos[1]}\`  at  **Latest Time:** \`${players.players[i].time}\``);	
+	let errors = await updateLogs(null, false);
+	if (errors[0]) return message.channel.send(errors[1]);
+  let players = await getLatestPlayers();
+	players = players.players;
+	let gamertag = getGamertag(args);
+	let pos, lastPos;
+	let playerHistory;
+	for (let i = 0; i < players.length; i++) {
+		if (players[i].gamertag==gamertag) {
+			if (players[i].time==null) return message.channel.send(`Player \`${gamertag}\` has no position data.`);
+			playerHistory = [];
+			message.channel.send(`**__${gamertag}'s positional history:__**`)
+			message.channel.send(`**Latest Positions:** \`${players[i].pos[0]} / ${players[i].pos[1]}\`  at  **Latest Time:** \`${players[i].time}\``);	
+			message.channel.send(`Collecting Position History...`);
+			for (let j = 0; j < players[i].posHistory.length; j++) {
+				playerHistory.push(`**Position:** \`${players[i].posHistory[j].pos[0]} / ${players[i].posHistory[j].pos[1]}\`  at  **Time:** \`${players[i].posHistory[j].time}\``);	
+			}
+			message.channel.send(playerHistory);
+			message.channel.send("Calculating...");
+			pos = players[i].pos;
+			if (players[i].posHistory.length>0) {
+				lastPos = players[i].posHistory[players[i].posHistory.length-1].pos
+				let {distance, theta, dir} = calculateVector(pos, lastPos);
+			
+				message.channel.send(`**__${gamertag}'s current positional data:__**`);
+				message.channel.send(`**${gamertag}** has moved **__${distance}m @${theta}° ${dir}__**`);
+				message.channel.send(`**From Last Position:** \`${lastPos[0]} / ${lastPos[1]}\`  at  **Last Time:** \`${players[i].posHistory[players[i].posHistory.length-1].time}\``);
+				message.channel.send(`**To Latest Position:** \`${pos[0]} / ${pos[1]}\`  at  **Latest Time:** \`${players[i].time}\``);
 				return message.channel.send("Done");
 			}
+			message.channel.send(`**__${gamertag}'s current positional data:__**`)
+			message.channel.send(`**Latest Position:** \`${pos[0]} / ${pos[1]}\`  at  **Latest Time:** \`${players[i].time}\``);	
+			return message.channel.send("Done");
 		}
-		return message.channel.send(`Player \`${gamertag}\` not found`);
-	});
+	}
+	return message.channel.send(`Player \`${gamertag}\` not found`);
 }
 
-function updateLogs(message, doReturn) {
-	exec("python collect.py", (error, stdout, stderr) => {
-    if (error!=null&&error!=undefined&&error!="") return message.channel.send(error);
-    if (stderr!=null&&stderr!=undefined&&stderr!="") return message.channel.send(stderr);
-    if (doReturn) return message.channel.send(`Updated Logs`);
-	});
-}
-
-function onlineStatus(message, args) {
+async function onlineStatus(message, args) {
 	if (args.length==0) return message.channel.send(`You need to provide a gamertag`);
-	exec("python collect.py", (error, stdout, stderr) => {
-    if (error!=null&&error!=undefined&&error!="") return message.channel.send(error);
-    if (stderr!=null&&stderr!=undefined&&stderr!="") return message.channel.send(stderr);
-    let players = require('./players.json');
-		delete require.cache[require.resolve("./players.json")];
-		players = require("./players.json");
-		let gamertag = getGamertag(args);
-		for (let i = 0; i < players.players.length; i++) {
-			if (players.players[i].gamertag==gamertag) {
-				return message.channel.send(`Player \`${gamertag}\` is \`${players.players[i].connectionStatus}\``);
-			}
+	let errors = await updateLogs(null, false);
+	if (errors[0]) return message.channel.send(errors[1]);
+  let players = await getLatestPlayers();
+	players = players.players;
+	let gamertag = getGamertag(args);
+	for (let i = 0; i < players.length; i++) {
+		if (players[i].gamertag==gamertag) {
+			return message.channel.send(`Player \`${gamertag}\` is \`${players[i].connectionStatus}\``);
 		}
-		return message.channel.send(`Player \`${gamertag}\` not found`);
-	});
+	}
+	return message.channel.send(`Player \`${gamertag}\` not found`);
 }
 
-function restartServer(message) {
-	exec("python restart.py", (error, stdout, stderr) => {
-		if (error!=null&&error!=undefined&&error!=""&&doReturn) return message.channel.send(error);
-    if (stderr!=null&&stderr!=undefined&&stderr!=""&&doReturn) return message.channel.send(stderr);
-		return message.channel.send("Restarting Server...");
-	});
+async function restartServer(message) {
+	let spawn = childProcess.spawnSync('python', ['restart.py']);
+	let error = spawn.stderr.toString().trim();
+	if (error) return message.channel.send(`Error: ${error}`);
+	return message.channel.send("Restarting Server...");
 }
 
-function updateRadar(message, args) {
+async function updateRadar(message, args) {
 	if (args.length==0) return message.channel.send(`You need to provide an \` x1 \` \` y1 \` \` x2 \` \` y2 \``);
 	if (args.length>0&&args.length<4) return message.channel.send(`You're missing coordinates D:`);
 	config.boundaries.x1 = args[0];
@@ -250,7 +259,7 @@ function updateRadar(message, args) {
 	return message.channel.send(`Boundaries are now between \` [${args[0]} / ${args[1]}] \` / \` [${args[2]} / ${args[3]}] \``);
 }
 
-function addWhitelist(message, args) {
+async function addWhitelist(message, args) {
 	if (args.length==0) return message.channel.send(`You need to provide an gamertag`);
 	let gamertag = getGamertag(args);
 	config.whitelist.push(gamertag);
@@ -258,7 +267,7 @@ function addWhitelist(message, args) {
 	return message.channel.send(`Added \` ${args[0]} \` to radar whitelist`);
 }
 
-function removeWhitelist(message, args) {
+async function removeWhitelist(message, args) {
 	if (args.length==0) return message.channel.send(`You need to provide an gamertag`);
 	let gamertag = getGamertag(args);
 	if (!whitelist.includes(gamertag)) return message.channel.send(`Player \` ${gamertag} \` is not in the whitelist: use command \` ?whitelistAdd <gamertag> \` to add this players.`);
@@ -267,7 +276,7 @@ function removeWhitelist(message, args) {
 	return message.channel.send(`Removed \` ${gamertag} \` from radar whitelist`);
 }
 
-function updateRuntime(message, args) {
+async function updateRuntime(message, args) {
 	if (tick>0) return message.channel.send('Cannot update runtime while alarm is active.');
 	if (args.length==0) return message.channel.send(`You need to provide a runtime number in hours`);
 	if (parseInt(args[0])>24) return message.channel.send('The runtime for the alarm can not be longer than 24 hours');
@@ -282,17 +291,99 @@ function updateRuntime(message, args) {
 	data as a background process.
 */
 async function getPlayerCount() {
-	updateLogs(null, false);
-	let players = require('./players.json').players;
-	delete require.cache[require.resolve("./players.json")];
-	players = require("./players.json").players;
+	let errors = await updateLogs(null, false);
+	if (errors[0]) return null;
+	let players = await getLatestPlayers();
+	players = players.players;
 	let onlineCount = 0;
 	for (let i = 0; i < players.length; i++) if (players[i].connectionStatus=="Online") onlineCount++;
 	return onlineCount;
 }
 
+async function connectMongo() {
+	db = await MongoClient.connect(process.env.mongoURI,{useUnifiedTopology:true});
+	dbo = db.db('novusData');
+}
+
+async function collectData(message) {
+	let count = await getPlayerCount();
+  tick++;
+  setTimeout(function() {
+    if (tick <= 24) {
+    	if (count>reportToday.report.highestPlayers) reportToday.report.highestPlayers = count;
+    	reportToday.report.averagePlayers += count;
+    	collectData();
+    } else {
+    	reportToday.report.averagePlayers /= 24;
+    	reportToday.save(function (err) {
+				if (err) throw err;
+			});
+
+    	let report = new Discord.MessageEmbed()
+  			.setColor('#ed3e24')
+  			.setTitle(`**__Todays Report (${reportToday.report.date}):__**`)
+  			.setAuthor('Novus', 'https://avatars.githubusercontent.com/u/48144618?v=4', 'https://github.com/SowinskiBraeden')
+  			.addFields({
+  				name: 'Highest Players:', value: reportToday.report.highestPlayers, inline: false
+  			}, {
+  				name: 'Average Players:', value: reportToday.report.averagePlayers, inline: false
+  			});
+  		message.channel.send(`@here`);
+  		message.channel.send(report);
+
+			tick = 0;
+			reportToday = new dayReport();
+			reportToday.serverID = process.env.server_id
+			reportToday.report.date = new Date();
+			reportToday.report.highestPlayers = 0;
+			reportToday.report.averagePlayers = 0;
+
+			dayReport.count({}, function(err, num) {
+				if (err) return console.error(err);
+				if (num>=7) {
+					dayReport.find().sort({$natural:-1}).limit(7).then(async (days, err) => {
+				  	if (err) return console.error(err);
+			  		let totalHighestPlayers = 0;
+			  		let averagePlayers = 0;
+				  	for (let i = 0; i < days.length; i++) {
+				  		if (days[i].report.highestPlayers>reportWeek.report.highestPlayers) reportWeek.report.highestPlayers = days[i].report.highestPlayers;
+				  		averagePlayers += days[i].report.averagePlayers;
+				  		totalHighestPlayers += days[i].report.highestPlayers;
+				  	}
+				  	reportWeek.report.averagePlayers = averagePlayers / 7;
+				  	reportWeek.report.averageHighestPlayers = totalHighestPlayers / 7;
+				  	reportWeek.save(function (err) {
+							if (err) throw err;
+						});
+
+						report = new Discord.MessageEmbed()
+			  			.setColor('#ed3e24')
+			  			.setTitle(`**__This Weeks Report:__**`)
+			  			.setAuthor('Novus', 'https://avatars.githubusercontent.com/u/48144618?v=4', 'https://github.com/SowinskiBraeden')
+			  			.addFields({
+			  				name: 'Highest Players This Week:', value: reportWeek.report.highestPlayers, inline: false
+			  			}, {
+			  				name: 'Average Players This Week:', value: reportWeek.report.averagePlayers, inline: false
+			  			}, {
+			  				name: 'Average Highest Players This Week:', value: reportWeek.report.averageHighestPlayers, inline: false
+			  			});
+			  		message.channel.send(`@here`);
+			  		message.channel.send(report);
+
+			  		await dbo.collection('dayreports').deleteMany({});
+				  });
+				};
+			});
+
+			collectData();
+    }
+  }, minute*60); // 1 hour
+}
+
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}`);
+  connectMongo();
+  collectData();
 });
 
 // Basic Commands

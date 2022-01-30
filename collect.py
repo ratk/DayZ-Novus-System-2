@@ -48,15 +48,15 @@ def getRawLogs():
           }).json()
 
   url = data['data']['token']['url']
-  urllib.request.urlretrieve(url, "logs.ADM")
+  urllib.request.urlretrieve(url, "./output/logs.ADM")
 
 
 # Convert Raw Logs into cleaned logs (only positional data logs)
 def cleanLogs():
-  with open("logs.ADM", "r") as logs:
+  with open("./output/logs.ADM", "r") as logs:
     lines = logs.readlines()
   # Isolate Player logs (Removes Connect, Disconnect, place, hit)
-  with open("clean.txt", "w") as logs:
+  with open("./output/clean.txt", "w") as logs:
     for line in lines:
       if not any(flag in line for flag in logFlags) and "| Player" in line.strip("\n"):
         logs.write(line)
@@ -64,7 +64,7 @@ def cleanLogs():
 
 # Generate List of player names, id's and positions
 def collectPlayerData():
-  with open('clean.txt', 'r') as logs:
+  with open('./output/clean.txt', 'r') as logs:
     cleanLines = logs.readlines()
     for line in cleanLines:
       pattern = re.escape(template)
@@ -105,7 +105,7 @@ def collectPlayerData():
 
 # Search Logs for Connected and Disconnected messages
 def activeStatus():
-  with open("logs.ADM", "r") as logs:
+  with open("./output/logs.ADM", "r") as logs:
     lines = logs.readlines()
     for line in lines:
       status = ""
@@ -151,5 +151,5 @@ if __name__ == '__main__':
   collectPlayerData()
   activeStatus()
 
-  with open("players.json", "w") as playerJSON:
+  with open("./output/players.json", "w") as playerJSON:
     json.dump(players, playerJSON, ensure_ascii=False, indent=2)

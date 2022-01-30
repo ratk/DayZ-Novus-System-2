@@ -1,14 +1,11 @@
 # Outputs
-logs.ADM
-players.json
-clean.txt
+output/*
 
 # Dependencies
 node_modules/*
 
 # Test
-test.js
-test-config.json
+test/*
 
 # Environment
 .env
