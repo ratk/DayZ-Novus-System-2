@@ -163,7 +163,7 @@ async function currentPos(message, args) {
 	if (errors[0]) return message.channel.send(errors[1]);
   let players = await getLatestPlayers();
 	players = players.players;
-	let gamertag = getGamertag(args);
+	let gamertag = await getGamertag(args);
 	let pos, lastPos;
 	for (let i = 0; i < players.length; i++) {
 		if (players[i].gamertag==gamertag) {
@@ -172,7 +172,7 @@ async function currentPos(message, args) {
 			message.channel.send("Calculating...")
 			if (players[i].posHistory.length>0) {
 				lastPos = players[i].posHistory[players[i].posHistory.length-1].pos
-				let {distance, theta, dir} = calculateVector(pos, lastPos);
+				let {distance, theta, dir} = await calculateVector(pos, lastPos);
 
 				message.channel.send(`**__${gamertag}'s current positional data:__**`)
 				message.channel.send(`**${gamertag}** has moved **__${distance}m @${theta}° ${dir}__**`);
@@ -192,7 +192,7 @@ async function checkPosHistory(message, args) {
 	if (errors[0]) return message.channel.send(errors[1]);
   let players = await getLatestPlayers();
 	players = players.players;
-	let gamertag = getGamertag(args);
+	let gamertag = await getGamertag(args);
 	let pos, lastPos;
 	let playerHistory;
 	for (let i = 0; i < players.length; i++) {
@@ -210,7 +210,7 @@ async function checkPosHistory(message, args) {
 			pos = players[i].pos;
 			if (players[i].posHistory.length>0) {
 				lastPos = players[i].posHistory[players[i].posHistory.length-1].pos
-				let {distance, theta, dir} = calculateVector(pos, lastPos);
+				let {distance, theta, dir} = await calculateVector(pos, lastPos);
 			
 				message.channel.send(`**__${gamertag}'s current positional data:__**`);
 				message.channel.send(`**${gamertag}** has moved **__${distance}m @${theta}° ${dir}__**`);
@@ -232,7 +232,7 @@ async function onlineStatus(message, args) {
 	if (errors[0]) return message.channel.send(errors[1]);
   let players = await getLatestPlayers();
 	players = players.players;
-	let gamertag = getGamertag(args);
+	let gamertag = await getGamertag(args);
 	for (let i = 0; i < players.length; i++) {
 		if (players[i].gamertag==gamertag) {
 			return message.channel.send(`Player \`${gamertag}\` is \`${players[i].connectionStatus}\``);
@@ -255,7 +255,7 @@ async function updateRadar(message, args) {
 	config.boundaries.y1 = args[1];
 	config.boundaries.x2 = args[2];
 	config.boundaries.y2 = args[3];
-	updateConfig();
+	await updateConfig();
 	return message.channel.send(`Boundaries are now between \` [${args[0]} / ${args[1]}] \` / \` [${args[2]} / ${args[3]}] \``);
 }
 
@@ -263,7 +263,7 @@ async function addWhitelist(message, args) {
 	if (args.length==0) return message.channel.send(`You need to provide an gamertag`);
 	let gamertag = getGamertag(args);
 	config.whitelist.push(gamertag);
-	updateConfig();
+	await updateConfig();
 	return message.channel.send(`Added \` ${args[0]} \` to radar whitelist`);
 }
 
@@ -272,7 +272,7 @@ async function removeWhitelist(message, args) {
 	let gamertag = getGamertag(args);
 	if (!whitelist.includes(gamertag)) return message.channel.send(`Player \` ${gamertag} \` is not in the whitelist: use command \` ?whitelistAdd <gamertag> \` to add this players.`);
 	config.whitelist = whitelist.filter(e => e !== gamertag);
-	updateConfig();
+	await updateConfig();
 	return message.channel.send(`Removed \` ${gamertag} \` from radar whitelist`);
 }
 
@@ -281,7 +281,7 @@ async function updateRuntime(message, args) {
 	if (args.length==0) return message.channel.send(`You need to provide a runtime number in hours`);
 	if (parseInt(args[0])>24) return message.channel.send('The runtime for the alarm can not be longer than 24 hours');
 	config.runtime = parseInt(args[0]);
-	updateConfig();
+	await updateConfig();
 	return message.channel.send(`Alarm runtime is now set to \`${args[0]}h\``);
 }
 
