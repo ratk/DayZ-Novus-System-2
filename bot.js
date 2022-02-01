@@ -312,11 +312,11 @@ async function collectData(message) {
     if (tick <= 24) {
     	if (count>reportToday.report.highestPlayers) reportToday.report.highestPlayers = count;
     	reportToday.report.averagePlayers += count;
-    	collectData();
+    	collectData(message);
     } else {
     	reportToday.report.averagePlayers /= 24;
     	reportToday.save(function (err) {
-				if (err) throw err;
+				if (err) console.error(err);
 			});
 
     	let report = new Discord.MessageEmbed()
@@ -328,7 +328,6 @@ async function collectData(message) {
   			}, {
   				name: 'Average Players:', value: reportToday.report.averagePlayers, inline: false
   			});
-  		message.channel.send(`@here`);
   		message.channel.send(report);
 
 			tick = 0;
@@ -350,10 +349,10 @@ async function collectData(message) {
 				  		averagePlayers += days[i].report.averagePlayers;
 				  		totalHighestPlayers += days[i].report.highestPlayers;
 				  	}
-				  	reportWeek.report.averagePlayers = averagePlayers / 7;
-				  	reportWeek.report.averageHighestPlayers = totalHighestPlayers / 7;
+				  	reportWeek.report.averagePlayers = (averagePlayers / 7).toFixed(1);
+				  	reportWeek.report.averageHighestPlayers = (totalHighestPlayers / 7).toFixed(1);
 				  	reportWeek.save(function (err) {
-							if (err) throw err;
+							if (err) console.error(err);
 						});
 
 						report = new Discord.MessageEmbed()
@@ -367,7 +366,6 @@ async function collectData(message) {
 			  			}, {
 			  				name: 'Average Highest Players This Week:', value: reportWeek.report.averageHighestPlayers, inline: false
 			  			});
-			  		message.channel.send(`@here`);
 			  		message.channel.send(report);
 
 			  		await dbo.collection('dayreports').deleteMany({});
@@ -375,7 +373,7 @@ async function collectData(message) {
 				};
 			});
 
-			collectData();
+			collectData(message);
     }
   }, minute*60); // 1 hour
 }
@@ -383,7 +381,6 @@ async function collectData(message) {
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}`);
   connectMongo();
-  collectData();
 });
 
 // Basic Commands
@@ -465,6 +462,11 @@ client.on('message', async (message) => {
     })
 
   // Commands
+  if (command == 'stats') {
+  	if (tick > 0) return message.channel.send(`Already Collecting Statistics`);
+  	message.channel.send(`Starting to collect Server Statistics`);
+  	collectData(message);
+  }
   if (command == 'shortcuts') return message.channel.send(shortcuts);
   if (command == 'ping') return message.channel.send('Pong!');
   if (command == 'help') return message.channel.send(help);
