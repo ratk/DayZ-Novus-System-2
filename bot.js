@@ -7,9 +7,11 @@ const dayReport = require('./models/dayReportModel');
 const weekReport = require('./models/weekReportModel');
 const mongoose = require('mongoose');
 const {MongoClient} = require('mongodb');
+const { off } = require('process');
 dotenv.config();
 
 // Connect to MongoDB database.
+mongoose.set('strictQuery', true);
 mongoose.connect(process.env.mongoURI);
 
 let db, dbo;
@@ -17,6 +19,7 @@ let db, dbo;
 // Files
 const configFile = './config.json'
 const playerFile = './output/players.json';
+const placedFile = './output/playersPlaced.json';
 
 let config = require(configFile);
 let whitelist = config.whitelist;
@@ -26,6 +29,10 @@ let n = config.runtime; // Amount of hours to run radar
 const minute = 60000; // 1 minute in milliseconds
 const hour = 12; // 1 hour in 5 minute increments
 let tick = 0;
+let tick2 = 0;
+
+let autoPos = false;
+let autoPlacedPos = false;
 
 let reportToday = new dayReport();
 reportToday.serverID = process.env.server_id
@@ -45,9 +52,12 @@ const updateConfig = async function() {fs.writeFileSync(configFile,JSON.stringif
 
 // Get latest players from json
 const getLatestPlayers = async function() {let p=require(playerFile);delete require.cache[require.resolve(playerFile)];p=require(playerFile);return p;};
+//Get last placed items from json
+const getLatestPlaced = async function() {let p=require(placedFile);delete require.cache[require.resolve(placedFile)];p=require(placedFile);return p;};
 
 const getGamertag = async function(t){let n="";if(1<t.length)for(let e=0;e<t.length;e++)e+1==t.length?n+=t[e]:n=n+t[e]+" ";else n=t[0];return n};
 const calculateTime = async function() {let r=Math.floor((hour*n-tick)/hour);let m=((hour*n-tick)%hour)*5;return{r,m};}
+const calculateTime2 = async function() {let r=Math.floor((hour*n-tick2)/hour);let m=((hour*n-tick2)%hour)*5;return{r,m};}
 
 // Get latest logs
 async function updateLogs(message, doReturn) {
@@ -85,6 +95,8 @@ function startSystem(message) {
   tick++;
   setTimeout(function() {
   	// Runs for 'n' hours
+		console.log('tick: ' + tick)
+		console.log('hour*n: ' + hour*n)
     if (tick <= hour*n) {
       startSystem(message);
     } else {tick=0;return message.channel.send("System Alarm Disabled");}
@@ -136,21 +148,76 @@ async function playerList(message) {
 	players = players.players;
 
 	let online = new Discord.MessageEmbed()
-  	.setColor('#ed3e24')
+  	.setColor('#8b3091')
   	.setTitle('**__Online Players:__**')
-  	.setAuthor('Novus', 'https://avatars.githubusercontent.com/u/48144618?v=4', 'https://github.com/SowinskiBraeden')
+		.setFooter('by danielratkbr') /*, footerImage)*/
+		.setThumbnail('https://cdn.discordapp.com/icons/1063932475698577518/a7a449e77e0fd7fa0a96571d919c3d05.webp?size=128')
 
   let offline = new Discord.MessageEmbed()
-  	.setColor('#ed3e24')
+  	.setColor('#8b3091')
   	.setTitle('**__Offlines Players__**')
-  	.setAuthor('Novus', 'https://avatars.githubusercontent.com/u/48144618?v=4', 'https://github.com/SowinskiBraeden')
+  	.setAuthor('Artista .. hahha -> DanielRatkBR', 'https://avatars.githubusercontent.com/u/4931744?v=4', 'https://github.com/ratk')
 
   if (players.length==0) return message.channel.send("No players in logs");
 	for (let i = 0; i < players.length; i++) {
 		if (players[i].connectionStatus=="Online") {
 			online.addFields({ name: `**${players[i].gamertag}** is:`, value: `\`${players[i].connectionStatus}\``, inline: false });
+		// } else {
+			// offline.addFields({ name: `**${players[i].gamertag}** is:`, value: `\`${players[i].connectionStatus}\``, inline: false });
+		}
+	}
+	// message.channel.send(offline);
+	return message.channel.send(online);
+}
+
+async function autoPosAll(message) {
+	if(!autoPos) {
+		setInterval(function() {
+			tick2++;
+			console.log(Date.now() + ': running autoPosAll : ' + tick2)
+			currentPosAll(message);
+		}, minute*5); // 5 minutes
+		message.channel.send(`**__Auto: All current players positional data started - 5 minutes__**`);
+		autoPos = true;
+	} else {
+		message.channel.send(`**__Auto: Already started__**`);
+	}
+}
+
+async function currentPosAll(message) {
+	let errors = await updateLogs(null, false);
+	if (errors[0]) return message.channel.send(errors[1]);
+
+	let players = await getLatestPlayers();
+	players = players.players;
+	let pos, gamertag, local;
+
+	if (players.length==0) return message.channel.send("No players in logs");
+
+	let online = new Discord.MessageEmbed()
+		.setColor('#8b3091')
+		.setTitle('**__Online Position Players:__**')
+		.setFooter('by danielratkbr') /*, footerImage)*/
+		.setThumbnail('https://cdn.discordapp.com/icons/1063932475698577518/a7a449e77e0fd7fa0a96571d919c3d05.webp?size=128')
+
+	let offline = new Discord.MessageEmbed()
+  	.setColor('#ac95b1')
+  	.setTitle('**__Offlines Position Players:__**')
+		.setFooter('by danielratkbr') /*, footerImage)*/
+		.setThumbnail('https://cdn.discordapp.com/icons/1063932475698577518/a7a449e77e0fd7fa0a96571d919c3d05.webp?size=128')
+
+	for (let i = 0; i < players.length; i++) {
+		gamertag = players[i].gamertag;
+		pos = players[i].pos;
+		local = '[' + pos[0] +';'+ pos[1] + '](https://www.izurvive.com/chernarusplus/#location=' + pos[0] +';'+ pos[1] + ')';
+		if (players[i].time==null) {
+			local = 'no position data'
+		}
+
+		if (players[i].connectionStatus=="Online") {
+			online.addFields({ name: `**${players[i].gamertag}** last position`, value: local, inline: false });
 		} else {
-			offline.addFields({ name: `**${players[i].gamertag}** is:`, value: `\`${players[i].connectionStatus}\``, inline: false });
+			offline.addFields({ name: `**${players[i].gamertag}** last position`, value: local, inline: false });
 		}
 	}
 	message.channel.send(offline);
@@ -165,25 +232,97 @@ async function currentPos(message, args) {
 	players = players.players;
 	let gamertag = await getGamertag(args);
 	let pos, lastPos;
+
+	let trajeto = new Discord.MessageEmbed()
+	.setColor('#8b3091')
+	.setTitle(`**__${gamertag}'s current positional data:__** max 10 positions`)
+	.setFooter('by danielratkbr') /*, footerImage)*/
+
 	for (let i = 0; i < players.length; i++) {
 		if (players[i].gamertag==gamertag) {
 			if (players[i].time==null) return message.channel.send(`Player \`${gamertag}\` has no position data.`);
 			pos = players[i].pos;
 			message.channel.send("Calculating...")
-			if (players[i].posHistory.length>0) {
-				lastPos = players[i].posHistory[players[i].posHistory.length-1].pos
-				let {distance, theta, dir} = await calculateVector(pos, lastPos);
+			if (players[i].posHistory.length>1) {
+				// lastPos = players[i].posHistory[players[i].posHistory.length-1].pos
+				// let {distance, theta, dir} = await calculateVector(pos, lastPos);
+				// message.channel.send(`**__${gamertag}'s current positional data:__**`)
+				// message.channel.send(`**${gamertag}** has moved **__${distance}m @${theta}° ${dir}__**`);
+				time = `${players[i].posHistory[0].time}`;
+				local = `[Time: ${time}](https://www.izurvive.com/chernarusplus/#location=${players[i].posHistory[0].pos[0]};${players[i].posHistory[0].pos[1]})`;
+				trajeto.addFields({ name: `**Initial Position:** \`${players[i].posHistory[0].pos[0]} / ${players[i].posHistory[0].pos[1]}\``, value: local, inline: false });
 
-				message.channel.send(`**__${gamertag}'s current positional data:__**`)
-				message.channel.send(`**${gamertag}** has moved **__${distance}m @${theta}° ${dir}__**`);
-				message.channel.send(`**From Last Position:** \`${lastPos[0]} / ${lastPos[1]}\`  at  **Last Time:** \`${players[i].posHistory[players[i].posHistory.length-1].time}\``);
-				return message.channel.send(`**To Latest Position:** \`${pos[0]} / ${pos[1]}\`  at  **Latest Time:** \`${players[i].time}\``);
+				if(players[i].posHistory.length > 9 ) {
+					for (let e = players[i].posHistory.length - 8 ; e < players[i].posHistory.length; e++) {
+						time = `${players[i].posHistory[e].time}`;
+						local = `[Time: ${time}](https://www.izurvive.com/chernarusplus/#location=${players[i].posHistory[e].pos[0]};${players[i].posHistory[e].pos[1]})`;
+						trajeto.addFields({ name: `**Went through:** \`${players[i].posHistory[e].pos[0]} / ${players[i].posHistory[e].pos[1]}\``, value: local, inline: false });
+					}
+				} else {
+					for (let e = 1 ; e < players[i].posHistory.length; e++) {
+						time = `${players[i].posHistory[e].time}`;
+						local = `[Time: ${time}](https://www.izurvive.com/chernarusplus/#location=${players[i].posHistory[e].pos[0]};${players[i].posHistory[e].pos[1]})`;
+						trajeto.addFields({ name: `**Went through:** \`${players[i].posHistory[e].pos[0]} / ${players[i].posHistory[e].pos[1]}\``, value: local, inline: false });
+					}
+				}
 			}
-			message.channel.send(`**__${gamertag}'s current positional data:__**`)
-			return message.channel.send(`**Latest Position:** \`${pos[0]} / ${pos[1]}\`  at  **Latest Time:** \`${players[i].time}\``);	
+			time = `${players[i].time}`;
+			local = `[Time: ${time}](https://www.izurvive.com/chernarusplus/#location=${pos[0]};${pos[1]})`;
+			trajeto.addFields({ name: `**Current Position:** \`${pos[0]} / ${pos[1]}\``, value: local, inline: false });
+			return message.channel.send(trajeto);
 		}
 	}
 	return message.channel.send(`Player \`${gamertag}\` not found`);
+}
+
+
+async function autoPlaced(message) {
+	if(!autoPlacedPos) {
+		setInterval(function() {
+			console.log(Date.now() + ': running placedPosAll...')
+			placedPosAll(message);
+		}, minute*15); // 15 minutes
+		message.channel.send(`**__Auto Placed: All current placed items data started - 15 minutes__**`);
+		autoPlacedPos = true;
+	} else {
+		message.channel.send(`**__Auto Placed: Already started__**`);
+	}
+}
+async function placedPosAll(message) {
+	let players = await getLatestPlaced();
+	players = players.players;
+	let pos, gamertag, local;
+
+	if (players.length==0) return message.channel.send("No placed items in logs");
+	let maxEvents = 21;
+
+	let online = new Discord.MessageEmbed()
+		.setColor('#8b3091')
+		.setTitle('**__Placed Items Position:__** last '+maxEvents.toString()+' events')
+		.setFooter('by danielratkbr') /*, footerImage)*/
+
+	if (players.length > maxEvents) {
+		for (let i = players.length - maxEvents; i < players.length; i++) {
+			gamertag = players[i].gamertag;
+			pos = players[i].pos;
+			local = '[' + `${players[i].time.replace(' EST','')}: ${players[i].event}` + '](https://www.izurvive.com/chernarusplus/#location=' + pos[0] +';'+ pos[1] + ')';
+			if (players[i].time==null) {
+				local = 'no position data'
+			}
+			online.addFields({ name: `**${gamertag}**`, value: local, inline: true });
+		}
+	} else {
+		for (let i = 0; i < players.length; i++) {
+			gamertag = players[i].gamertag;
+			pos = players[i].pos;
+			local = '[' + `${players[i].time.replace(' EST','')}: ${players[i].event}` + '](https://www.izurvive.com/chernarusplus/#location=' + pos[0] +';'+ pos[1] + ')';
+			if (players[i].time==null) {
+				local = 'no position data'
+			}
+			online.addFields({ name: `**${gamertag}**`, value: local, inline: true });
+		}
+	}
+	return message.channel.send(online);
 }
 
 async function checkPosHistory(message, args) {
@@ -319,10 +458,12 @@ async function collectData(message) {
 				if (err) console.error(err);
 			});
 
+			//.setAuthor('Novus', 'https://avatars.githubusercontent.com/u/48144618?v=4', 'https://github.com/SowinskiBraeden')
     	let report = new Discord.MessageEmbed()
-  			.setColor('#ed3e24')
+  			.setColor('#8b3091')
   			.setTitle(`**__Todays Report (${reportToday.report.date}):__**`)
-  			.setAuthor('Novus', 'https://avatars.githubusercontent.com/u/48144618?v=4', 'https://github.com/SowinskiBraeden')
+				.setFooter('by danielratkbr') /*, footerImage)*/
+				.setThumbnail('https://cdn.discordapp.com/icons/1063932475698577518/a7a449e77e0fd7fa0a96571d919c3d05.webp?size=128')
   			.addFields({
   				name: 'Highest Players:', value: reportToday.report.highestPlayers, inline: false
   			}, {
@@ -356,9 +497,10 @@ async function collectData(message) {
 						});
 
 						report = new Discord.MessageEmbed()
-			  			.setColor('#ed3e24')
+			  			.setColor('#8b3091')
 			  			.setTitle(`**__This Weeks Report:__**`)
-			  			.setAuthor('Novus', 'https://avatars.githubusercontent.com/u/48144618?v=4', 'https://github.com/SowinskiBraeden')
+							.setFooter('by danielratkbr') /*, footerImage)*/
+							.setThumbnail('https://cdn.discordapp.com/icons/1063932475698577518/a7a449e77e0fd7fa0a96571d919c3d05.webp?size=128')
 			  			.addFields({
 			  				name: 'Highest Players This Week:', value: reportWeek.report.highestPlayers, inline: false
 			  			}, {
@@ -385,19 +527,21 @@ client.on('ready', () => {
 
 // Basic Commands
 client.on('message', async (message) => {
-  let prefix = "?";
- 	if (process.env.DEBUG=="true") prefix = "dev?";
+  let prefix = ".";
+ 	if (process.env.DEBUG=="true") prefix = "ratk.";
   if (!message.content.startsWith(prefix) || message.author.bot) return;
+  if (message.author.bot || message.channel.type === "dm") return;
 
   const args = message.content.slice(prefix.length).trim().split(' ');
   const command = args.shift().toLowerCase();
-
+	
   // Help Embed
   const help = new Discord.MessageEmbed()
-    .setColor('#ed3e24')
+    .setColor('#8b3091')
     .setTitle('**Commands:**')
-    .setAuthor('Novus', 'https://avatars.githubusercontent.com/u/48144618?v=4', 'https://github.com/SowinskiBraeden')
-    .setDescription('Novus Security Commmand')
+		.setFooter('by danielratkbr') /*, footerImage)*/
+		.setThumbnail('https://cdn.discordapp.com/icons/1063932475698577518/a7a449e77e0fd7fa0a96571d919c3d05.webp?size=128')
+    .setDescription('Zelta Nitrado Hack Bot Commmand hahahaha')
     .addFields({
       name: `**__General Commands:__**`,
       value: `
@@ -407,7 +551,10 @@ client.on('message', async (message) => {
 			**${prefix}restartServer** - \`Restarts Server\`
     	**${prefix}runtime** - \`Returns the max runtime for the alarm radar\`
       **${prefix}playerList** - \`Shows current players\`
+      **${prefix}playerListAll** - \`Shows last position all players\`
       **${prefix}playerCount** - \`Shows number of players in server\`
+      **${prefix}placedPosAll** - \`Shows players placed items in server\`
+      **${prefix}autoPlaced** - \`Auto players placed items in server\`
       `,
       inline: false
     }, {
@@ -424,7 +571,7 @@ client.on('message', async (message) => {
     	value: `
       **${prefix}start** - \`Starts alarm system\`
       **${prefix}stop** - \`Stops alarm system\`
-      **${prefix}restart** - \`Restarts alarm system\`\
+      **${prefix}restart** - \`Restarts alarm system\`
     	**${prefix}forceCheck** - \`Forces a check for player in base\`
     	**${prefix}isActive** - \`Returns if alarm is active\`
     	**${prefix}updateRadar** <x1, y1, x2, y2> - \`Changes the boundaries for the alarm radar\`
@@ -436,16 +583,18 @@ client.on('message', async (message) => {
     })
 
   const shortcuts = new Discord.MessageEmbed()
-    .setColor('#ed3e24')
+    .setColor('#8b3091')
     .setTitle('**Command Shortcuts:**')
-    .setAuthor('Novus', 'https://avatars.githubusercontent.com/u/48144618?v=4', 'https://github.com/SowinskiBraeden')
-    .setDescription('Novus Security Commmand')
+		.setFooter('by danielratkbr') /*, footerImage)*/
+		.setThumbnail('https://cdn.discordapp.com/icons/1063932475698577518/a7a449e77e0fd7fa0a96571d919c3d05.webp?size=128')
+    .setDescription('Zelta Nitrado Hack Commmand hahahaha')
     .addFields({
       name: `**__Command Shortcuts:__**`,
       value: `
       **${prefix}playerList** - \`?pl\`
       **${prefix}playerHistory** - \`?history\` or \`?ph\`
       **${prefix}currentPos** - \`?pos\`
+      **${prefix}currentPosAll** - \`?posAll\`
       **${prefix}onlineStatus** - \`?online\`
 			**${prefix}restartServer** - \`?rsServer\`
       **${prefix}restart** - \`?rsAlarm\`
@@ -457,6 +606,8 @@ client.on('message', async (message) => {
     	**${prefix}updateRuntime** - \`?updateRt\`
     	**${prefix}runtime** - \`?rt\`
     	**${prefix}playerCount** - \`?count\`
+    	**${prefix}placedPosAll** - \`?placed\`
+    	**${prefix}autoPlaced** - \`?autoPlaced\`
       `,
       inline: false
     })
@@ -473,57 +624,59 @@ client.on('message', async (message) => {
   if (command == 'playerlist' || command == 'pl') playerList(message);
   if (command == 'playerhistory' || command == 'history' || command == 'ph') checkPosHistory(message, args);
   if (command == 'currentpos' || command == 'pos') currentPos(message, args);
-  if (command == 'updatelogs' || command == 'update') updateLogs(message, true);
+  if (command == 'currentposall' || command == 'posall') currentPosAll(message);
+  if (command == 'autoposall' || command == 'autopos') autoPosAll(message);
+	if (command == 'placedPosAll' || command == 'placed') placedPosAll(message);
+	if (command == 'autoPlaced' || command == 'autoplaced') autoPlaced(message);
+	if (command == 'updatelogs' || command == 'update') updateLogs(message, true);
   if (command == 'onlinestatus' || command == 'online') onlineStatus(message, args);
   if (command == 'restartserver' || command == 'rsserver') restartServer(message);
-  // if (command == 'forcecheck' || command == 'check') forceCheck(message);
-  if (command == 'forcecheck' || command == 'check') return message.channel.send(`Alarm Radar is disabled.`);
-  // if (command == 'updateradar' || command == 'updaterd') updateRadar(message, args);
-  if (command == 'updateradar' || command =='update') return message.channel.send(`Alarm Radar is disabled.`);
-  // if (command == 'whitelistadd' || command == 'wladd') addWhitelist(message, args);
-  // if (command == 'whitelistremove' || command == 'wlremove') removeWhitelist(message, args); 
-  // if (command == 'updateruntime' || command == 'updatert') updateRuntime(message, args);
-  // if (command == 'runtime' || command == 'rt') return message.channel.send(`The current runtime for the base alarm is \` ${n}h \``);
+  if (command == 'forcecheck' || command == 'check') forceCheck(message);
+  if (command == 'updateradar' || command == 'updaterd') updateRadar(message, args);
+  if (command == 'addWhitelist' || command == 'wladd') addWhitelist(message, args);
+  if (command == 'removeWhitelist' || command == 'wlremove') removeWhitelist(message, args); 
+  if (command == 'updateruntime' || command == 'updatert') updateRuntime(message, args);
+  if (command == 'runtime' || command == 'rt') return message.channel.send(`The current runtime for the base alarm is \` ${n}h \``);
   if (command == 'playercount' || command == 'count') return message.channel.send(`${await getPlayerCount()}/32 players online`);
-
-  // if (command == 'isactive' || command == 'active' || command == 'time' || command == 'timer') {
-  // 	if (tick > 0) {
-  // 		message.channel.send(`The alarm is active, and will be active for \`${calculateTime().r}h ${calculateTime().m}m\`...`)
-  // 		return message.channel.send("use \`?restart\` to restart the alarm.");
-  // 	}
-  // 	return message.channel.send("System Alarm is not active, use \`?start\` to start the alarm.");	
-  // }
-  // if (command == 'start') {
-  // 	if (tick>0) return message.channel.send("System Alarm is already active, use \`?restart\` to restart the alarm.");	
-  // 	tick = 0;
-  // 	message.channel.send("System Alarm Started");
-  // 	startSystem(message);
-  // }
-
-  // // Update 'tick' to 'n' hours will force 'startSystem' func stop itself
-  // if (command == 'stop') {
-  // 	if (tick==0) return message.channel.send('The system is not active');
-  // 	tick=hour*n;tick++;
-  // 	return message.channel.send('Stopping... This may take a couple minutes');
-  // }
-
-  // // Update 'tick' back to 0 making 'startSystem' func 'restart'
-  // if (command == 'restart' || command == 'rsalarm') {
-  // 	if (tick==0) return message.channel.send("System Alarm is not active, use \`?start\` to start the alarm.");
-  // 	tick=0;
-  // 	return message.channel.send('Restarting alarm system...');
-  // }
-
-  if (command == 'isactive' ||
-  	  command == 'active' ||
-  	  command == 'time' ||
-  	  command == 'timer' ||
-  	  command == 'start' ||
-  	  command == 'stop' ||
-  	  command == 'restart' ||
-  	  command == 'rsalarm'
-  	  ) {
-  	return message.channel.send(`Alarm Radar is disabled.`);
+	  
+	if (command == 'isactive' || command == 'active' || command == 'time' || command == 'timer') {
+  	if (tick > 0) {
+  		message.channel.send(`The alarm is active, and will be active for \`${calculateTime().r}h ${calculateTime().m}m\`...`)
+  		return message.channel.send("use \`?restart\` to restart the alarm.");
+  	}
+  	return message.channel.send("System Alarm is not active, use \`?start\` to start the alarm.");	
   }
+  if (command == 'start') {
+  	if (tick>0) return message.channel.send("System Alarm is already active, use \`?restart\` to restart the alarm.");	
+  	tick = 0;
+  	message.channel.send("System Alarm Started");
+  	startSystem(message);
+  }
+
+  // Update 'tick' to 'n' hours will force 'startSystem' func stop itself
+  if (command == 'stop') {
+  	if (tick==0) return message.channel.send('The system is not active');
+  	tick=hour*n;tick++;
+  	return message.channel.send('Stopping... This may take a couple minutes');
+  }
+
+  // Update 'tick' back to 0 making 'startSystem' func 'restart'
+  if (command == 'restart' || command == 'rsalarm') {
+  	if (tick==0) return message.channel.send("System Alarm is not active, use \`?start\` to start the alarm.");
+  	tick=0;
+  	return message.channel.send('Restarting alarm system...');
+  }
+
+  // if (command == 'isactive' ||
+  // 	  command == 'active' ||
+  // 	  command == 'time' ||
+  // 	  command == 'timer' ||
+  // 	  command == 'start' ||
+  // 	  command == 'stop' ||
+  // 	  command == 'restart' ||
+  // 	  command == 'rsalarm'
+  // 	  ) {
+  // 	return message.channel.send(`Alarm Radar is disabled.`);
+  // }
 });
-client.login(process.env.token);
+client.login(process.env.discord_token);

@@ -16,7 +16,28 @@ else:
   SERVER_ID = os.environ['server_id']
 
 template = '$time | Player "$gamertag" (id=$playerID pos=<$pos>)'
+templateEvent = '$time | Player "$gamertag" (id=$playerID pos=<$pos>)$event'
+templatePlaced = '$time | Player "$gamertag" (id=$playerID pos=<$pos>) placed $event'
+
 logFlags = [
+  "disconnected",
+  ") placed ",
+  "connected",
+  "regained consciousne",
+  "is unconscious",
+  "killed by",
+  ")Built ",
+  ") folded",
+  ")Player SurvivorBase",
+  ") died.",
+  ") committed suicide",
+  ")Dismantled",
+  "(DEAD)",
+  ") bled",
+  "hit by Player"
+]
+
+logFlagsbkp = [
   "disconnected",
   ") placed ",
   "connected",
@@ -32,11 +53,24 @@ logFlags = [
   ")Dismantled",
   ") bled"
 ]
+
+placedFlags = [
+  "Battery Charger",
+  "Power Generator"
+]
+
+baseFlags = [
+  ")Built "
+  ")Player SurvivorBase",
+  ")Dismantled",
+]
 players = {
   'players': []
 }
-
-
+playersPlaced = {
+  'players': []
+}
+print(f"https://api.nitrado.net/services/{SERVER_ID}/gameservers/file_server/download")
 # Download Raw Logs off Nitrado
 def getRawLogs():
   data = requests.get(
@@ -44,12 +78,14 @@ def getRawLogs():
           headers={
             "Authorization": AUTH_KEY
           }, json={
-            "file": "/games/ni5350965_2/noftp/dayzxb/config/DayZServer_X1_x64.ADM"
+            "file": "/games/ni8413161_1/noftp/dayzps/config/DayZServer_PS4_x64.ADM"
           }).json()
-
-  url = data['data']['token']['url']
-  if not os.path.exists('output'): os.mkdir('output')
-  urllib.request.urlretrieve(url, "./output/logs.ADM")
+  try:
+    url = data['data']['token']['url']
+    if not os.path.exists('output'): os.mkdir('output')
+    urllib.request.urlretrieve(url, "./output/logs.ADM")
+  except:
+    print("failed to get data from nitrado")
 
 
 # Convert Raw Logs into cleaned logs (only positional data logs)
@@ -60,8 +96,28 @@ def cleanLogs():
   with open("./output/clean.txt", "w") as logs:
     for line in lines:
       if not any(flag in line for flag in logFlags) and "| Player" in line.strip("\n"):
+        if not "(Unknown" in line.strip("\n"):
+          logs.write(line)
+        else:
+          print("Unknown found: " , line)
+
+  # Isolate PLACED logs
+  print("----------------------------------------------------")
+  print("COLLECT PLACED ITENS")
+  print("----------------------------------------------------")
+  with open("./output/placed.txt", "w") as logs:
+    for line in lines:
+      if not any(flag in line for flag in placedFlags) and "placed" in line.strip("\n"):
         logs.write(line)
 
+  # Isolate BASE logs
+  print("----------------------------------------------------")
+  print("COLLECT BASE ITENS")
+  print("----------------------------------------------------")
+  with open("./output/bases.txt", "w") as logs:
+    for line in lines:
+      if any(flag in line for flag in baseFlags) and "| Player" in line.strip("\n"):
+        logs.write(line)
 
 # Generate List of player names, id's and positions
 def collectPlayerData():
@@ -71,6 +127,7 @@ def collectPlayerData():
       pattern = re.escape(template)
       pattern = re.sub(r'\\\$(\w+)', r'(?P<\1>.*)', pattern)
       data = re.match(pattern, line)
+
       if data is None: break
 
       query = {
@@ -87,15 +144,17 @@ def collectPlayerData():
           if players['players'][i]['gamertag']==data.groupdict()['gamertag']:
             # Updates existing player data
             for j in range(len(players['players'][i]['posHistory'])):
-              query['posHistory'].append({
-                'time': players['players'][i]['posHistory'][j]['time'],
-                'pos': players['players'][i]['posHistory'][j]['pos']
-              })
+              if not players['players'][i]['posHistory'][j]['pos']==data.groupdict()['pos']:
+                query['posHistory'].append({
+                  'time': players['players'][i]['posHistory'][j]['time'],
+                  'pos': players['players'][i]['posHistory'][j]['pos']
+                })
 
-            query['posHistory'].append({
-              'time': players['players'][i]['time'],
-              'pos': players['players'][i]['pos']
-            })
+            if not players['players'][i]['pos']==data.groupdict()['pos']:
+              query['posHistory'].append({
+                'time': players['players'][i]['time'],
+                'pos': players['players'][i]['pos']
+              })
 
             players['players'].remove(players['players'][i])
             break
@@ -103,6 +162,26 @@ def collectPlayerData():
         # Logs new player data
         players['players'].append(query)
 
+# Generate List of player names, with placed items
+def collectPlacedData():
+  with open('./output/placed.txt', 'r') as logs:
+    cleanLines = logs.readlines()
+    for line in cleanLines:
+      pattern = re.escape(templatePlaced)
+      pattern = re.sub(r'\\\$(\w+)', r'(?P<\1>.*)', pattern)
+      data = re.match(pattern, line)
+      if data is None: break
+
+      query = {
+        'gamertag': data.groupdict()['gamertag'],
+        'playerID': data.groupdict()['playerID'],
+        'time': data.groupdict()['time']+' EST',
+        'pos': data.groupdict()['pos'].split(", "),
+        'event': data.groupdict()['event'],
+      }
+
+      # Logs new player data
+      playersPlaced['players'].append(query)
 
 # Search Logs for Connected and Disconnected messages
 def activeStatus():
@@ -150,7 +229,11 @@ if __name__ == '__main__':
   getRawLogs()
   cleanLogs()
   collectPlayerData()
+  collectPlacedData()
   activeStatus()
 
   with open("./output/players.json", "w") as playerJSON:
     json.dump(players, playerJSON, ensure_ascii=False, indent=2)
+
+  with open("./output/playersPlaced.json", "w") as playerJSON:
+    json.dump(playersPlaced, playerJSON, ensure_ascii=False, indent=2)

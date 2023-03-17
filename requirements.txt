@@ -1,3 +1,4 @@
 requests
 urllib3
 python_dotenv
+selenium==3.141.0

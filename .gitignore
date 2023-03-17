@@ -9,3 +9,11 @@ test/*
 
 # Environment
 .env
+
+# FIREFOX PROFILE
+profile/*
+
+# izurvive mapper
+izurvive.py
+geckodriver.exe
+geckodriver.log
