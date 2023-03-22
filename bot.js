@@ -151,12 +151,13 @@ async function playerList(message) {
   	.setColor('#8b3091')
   	.setTitle('**__Online Players:__**')
 		.setFooter('by danielratkbr') /*, footerImage)*/
-		.setThumbnail('https://cdn.discordapp.com/icons/1063932475698577518/a7a449e77e0fd7fa0a96571d919c3d05.webp?size=128')
-
-  let offline = new Discord.MessageEmbed()
+		.setThumbnail('https://agenciametanet.com/images/bot_image_ok.png')
+		
+		let offline = new Discord.MessageEmbed()
   	.setColor('#8b3091')
   	.setTitle('**__Offlines Players__**')
   	.setAuthor('Artista .. hahha -> DanielRatkBR', 'https://avatars.githubusercontent.com/u/4931744?v=4', 'https://github.com/ratk')
+		.setThumbnail('https://agenciametanet.com/images/bot_image_red.png')
 
   if (players.length==0) return message.channel.send("No players in logs");
 	for (let i = 0; i < players.length; i++) {
@@ -463,7 +464,7 @@ async function collectData(message) {
   			.setColor('#8b3091')
   			.setTitle(`**__Todays Report (${reportToday.report.date}):__**`)
 				.setFooter('by danielratkbr') /*, footerImage)*/
-				.setThumbnail('https://cdn.discordapp.com/icons/1063932475698577518/a7a449e77e0fd7fa0a96571d919c3d05.webp?size=128')
+				.setThumbnail('https://agenciametanet.com/images/bot_image_ok.png')
   			.addFields({
   				name: 'Highest Players:', value: reportToday.report.highestPlayers, inline: false
   			}, {
@@ -500,7 +501,7 @@ async function collectData(message) {
 			  			.setColor('#8b3091')
 			  			.setTitle(`**__This Weeks Report:__**`)
 							.setFooter('by danielratkbr') /*, footerImage)*/
-							.setThumbnail('https://cdn.discordapp.com/icons/1063932475698577518/a7a449e77e0fd7fa0a96571d919c3d05.webp?size=128')
+							.setThumbnail('https://agenciametanet.com/images/bot_image_ok.png')
 			  			.addFields({
 			  				name: 'Highest Players This Week:', value: reportWeek.report.highestPlayers, inline: false
 			  			}, {
@@ -540,7 +541,7 @@ client.on('message', async (message) => {
     .setColor('#8b3091')
     .setTitle('**Commands:**')
 		.setFooter('by danielratkbr') /*, footerImage)*/
-		.setThumbnail('https://cdn.discordapp.com/icons/1063932475698577518/a7a449e77e0fd7fa0a96571d919c3d05.webp?size=128')
+		.setThumbnail('https://agenciametanet.com/images/bot_image_ok.png')
     .setDescription('Zelta Nitrado Hack Bot Commmand hahahaha')
     .addFields({
       name: `**__General Commands:__**`,
@@ -586,7 +587,7 @@ client.on('message', async (message) => {
     .setColor('#8b3091')
     .setTitle('**Command Shortcuts:**')
 		.setFooter('by danielratkbr') /*, footerImage)*/
-		.setThumbnail('https://cdn.discordapp.com/icons/1063932475698577518/a7a449e77e0fd7fa0a96571d919c3d05.webp?size=128')
+		.setThumbnail('https://agenciametanet.com/images/bot_image_ok.png')
     .setDescription('Zelta Nitrado Hack Commmand hahahaha')
     .addFields({
       name: `**__Command Shortcuts:__**`,

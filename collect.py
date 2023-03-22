@@ -96,7 +96,7 @@ def cleanLogs():
   with open("./output/clean.txt", "w") as logs:
     for line in lines:
       if not any(flag in line for flag in logFlags) and "| Player" in line.strip("\n"):
-        if not "(Unknown" in line.strip("\n"):
+        if not "id=Unknown" in line.strip("\n"):
           logs.write(line)
         else:
           print("Unknown found: " , line)
